@@ -1,0 +1,34 @@
+For a proper work of kueued, following is needed:
+
+1. mariadb (mysql) installation
+2. to create the needed database and user, following scripts are provied
+
+  /usr/share/doc/packages/kueued/create_tables.sql
+  /usr/share/doc/packages/kueued/create_mysqluser.sql
+
+  please use
+
+  mysql -u <mysqladminuser> -p < /usr/share/doc/packages/kueued/create_tables.sql
+  mysql -u <mysqladminuser> -p < /usr/share/doc/packages/kueued/create_mysqluser.sql
+
+3. a valid configuration /etc/kueued.conf
+
+4. a proper /etc/freetds.conf with a [<servername>] section that points
+   to a valid ODBC setup
+
+
+5. a proper ODBC setup (freetds) for database "qmonDB"
+
+---/etc/unixODBC/odbc.ini----
+[qmonDB]
+Driver          = TDS
+Servername      = <servername>
+Database        = <databasename>
+-----------------------------
+
+6. enable following services
+
+systemctl enable kueued.service
+systemctl enable kueued-update.service
+
+   
