@@ -1,0 +1,15 @@
+[Unit]
+Description=Kueued update service
+Wants=basic.target
+Requires=kueued.service
+After=kueued.service
+
+[Service]
+Restart=on-failure
+Type=simple
+User=kueued
+Group=kueued
+ExecStart=/usr/bin/kueued-update
+
+[Install]
+WantedBy=multi-user.target

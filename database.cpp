@@ -231,11 +231,11 @@ bool Database::checkLTSSbyId( const QString& id, const QString& dbname )
 }
 
 
-QStringList Database::getSrForCr( const QString& cr, const QString& mysqlname, const QString& reportname, const QString& siebelname )
+QString Database::getSrForCr( const QString& cr, const QString& mysqlname, const QString& reportname )
 {
-    QStringList sr = getSrForCrMysql( cr, mysqlname );
+    QString sr = getSrForCrMysql( cr, mysqlname );
     
-    if ( sr.isEmpty() )
+    if ( sr == QString::Null() )
     {
         QSqlDatabase r = QSqlDatabase::database( reportname );
         
@@ -244,17 +244,17 @@ QStringList Database::getSrForCr( const QString& cr, const QString& mysqlname, c
             openReportDB( reportname );
         }
         
-        sr = getSrForCrReport( cr, mysqlname, reportname, siebelname );
+        sr = getSrForCrReport( cr, mysqlname, reportname );
     }
         
     return sr;
 }
 
-QStringList Database::getSrForCrMysql( const QString& cr, const QString& dbname )
+QString Database::getSrForCrMysql( const QString& cr, const QString& dbname )
 {
     QSqlDatabase db;
-    QStringList sr;
-        
+    QString sr;
+    
     if ( dbname.isNull() ) 
     {
         db = QSqlDatabase::database( "mysqlDB" );
@@ -268,27 +268,26 @@ QStringList Database::getSrForCrMysql( const QString& cr, const QString& dbname 
     
     QSqlQuery query( db );
     
-    query.prepare( "SELECT SR, CUST, BDESC FROM CRSR WHERE ( CR = :cr )" );
+    query.prepare( "SELECT SR FROM CRSR WHERE ( CR = :cr )" );
     query.bindValue( ":cr", cr );
     
     if ( !query.exec() ) qDebug() << query.lastError().text();
     
     if ( query.next() )
     {
-        sr.append( query.value( 0 ).toString() );
-	sr.append( query.value( 1 ).toString() );
-	sr.append( query.value( 2 ).toString() );
+        return query.value( 0 ).toString();
     }
-
-    return sr;
+    else
+    {
+        return QString::Null();
+    }
 }
 
 
-QStringList Database::getSrForCrReport( const QString& cr, const QString& dbname1, const QString& dbname, const QString& siebelname )
+QString Database::getSrForCrReport( const QString& cr, const QString& dbname1, const QString& dbname )
 {
     QSqlDatabase db;
     QSqlDatabase db1;
-    QStringList srinfo;
     QString sr;
     
     if ( dbname.isNull() ) 
@@ -326,28 +325,23 @@ QStringList Database::getSrForCrReport( const QString& cr, const QString& dbname
     if ( query.next() )
     {
         sr = query.value( 0 ).toString();
-	
-	QStringList info = srInfo( sr, siebelname );
         
-	QString desc = info.at( 0 );
-	QString cust = info.at( 3 );
-	
         QSqlQuery query1( db1 );
         
-        query1.prepare( "INSERT INTO CRSR( CR, SR, CUST, BDESC ) VALUES ( :cr, :sr, :cust, :bdesc )" );
+        query1.prepare( "INSERT INTO CRSR( CR, SR ) VALUES ( :cr, :sr )" );
         query1.bindValue( ":cr", cr );
         query1.bindValue( ":sr", sr );
-	query1.bindValue( ":cust", cust );
-	query1.bindValue( ":bdesc", desc );
-	        
+        
         if ( !query1.exec() ) qDebug() << query1.lastError().text();
         
-	srinfo.append( sr );
-	srinfo.append( cust );
-	srinfo.append( desc );
+        return sr;
+    }
+    else
+    {
+        sr = "ERROR";
     }
     
-    return srinfo;
+    return sr;
 }
 
 QList< LTSScustomer > Database::getLTSScustomersExt( const QString& dbname )
@@ -762,7 +756,7 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
     while ( query.next() )
     {
         QueueItem i;
-	
+        
         i.id = query.value( 0 ).toString();
         i.geo = query.value( 1 ).toString();
         i.hours = query.value( 2 ).toString();
@@ -775,15 +769,9 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
         
         if ( query.value( 9 ).toString() == "Collaboration" )
         {
-	    QStringList srcrinfo;
-            
-	    i.isCr = true;
+            i.isCr = true;
             i.creator = getCreator( i.id, dbname );
-            srcrinfo = getSrForCr( i.id, mysqlname, reportname, dbname ); 
-	    
-	    i.crsr = srcrinfo.at( 0 );
-	    i.crsrcust = srcrinfo.at( 1 );
-	    i.crsrdesc = srcrinfo.at( 2 );
+            i.crsr = getSrForCr( i.id, mysqlname, reportname );
         }
         else
         {
@@ -842,7 +830,7 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
             i.high_value = false;
         }
         
-        i.detailed_desc =  query.value( 24 ).toString().replace( "]]>", "]]&gt;" );
+        i.detailed_desc =  query.value( 24 ).toString();
         i.alt_contact = query.value( 25 ).toString();
         i.bugId = query.value( 26 ).toString();
         i.cstNum = query.value( 27 ).toString();
@@ -1657,17 +1645,9 @@ QList< SiebelItem > Database::getSrsForQueue( const QString& queue, const QStrin
         
         if ( si.subtype == "Collaboration" )
         {
-	    QStringList nfo = getSrForCrMysql( si.id, dbname );
-	    
             si.isCr = true;
             si.creator = query.value( 24 ).toString();
-            
-	    if ( !nfo.isEmpty() )
-	    {
-		si.crsr = nfo.at( 0 );
-		si.crsrcust = nfo.at( 1 );
-		si.crsrdesc = nfo.at( 2 );
-	    }
+            si.crsr = getSrForCrMysql( si.id, dbname );
         }
         else
         {
@@ -2159,15 +2139,9 @@ QList< SiebelItem > Database::getQmonSrs( const QString& dbname, const QString& 
 
         if ( query.value( 16 ).toString() == "Collaboration" )
         {
-	    QStringList nfo = getSrForCr( si.id, mysqlname, reportname, dbname );
             si.isCr = true;
             si.creator = getCreator( si.id, dbname );
-	    
-	    if ( !nfo.isEmpty() ) {
-	      si.crsr = nfo.at( 0 );
-	      si.crsrcust = nfo.at( 1 );
-	      si.crsrdesc = nfo.at( 2 );
-	    }
+            si.crsr = getSrForCr( si.id, mysqlname, reportname );
         }
         else
         {

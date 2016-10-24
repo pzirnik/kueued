@@ -42,6 +42,8 @@ QString XML::qmon( QList<SiebelItem> list )
         QDateTime adate = QDateTime::fromString( si.last_update, "yyyy-MM-dd hh:mm:ss" );
         QDateTime sladate = QDateTime::fromString( si.sla, "yyyy-MM-dd hh:mm:ss" );
         QDateTime qdate = QDateTime::fromString( si.inqueue, "yyyy-MM-dd hh:mm:ss" );
+	QString s_ = "]]>";
+	QString r_ = "]]]]><![CDATA[>";
 
         qint64 age = ( odate.secsTo( now ) - ( Settings::timezoneCorrection() * 3600 ) );
         qint64 lu = ( adate.secsTo( now ) - ( Settings::timezoneCorrection() * 3600 ));
@@ -49,8 +51,8 @@ QString XML::qmon( QList<SiebelItem> list )
         qint64 sla = ( now.secsTo( sladate ) );
 
         xml += "  <sr>\n";
-        xml += "    <id><![CDATA[" + si.id + "]]></id>\n";
-        xml += "    <queue><![CDATA[" + si.queue + "]]></queue>\n";
+        xml += "    <id><![CDATA[" + si.id.replace(s_,r_) + "]]></id>\n";
+        xml += "    <queue><![CDATA[" + si.queue.replace(s_,r_) + "]]></queue>\n";
     
         if ( si.isChat )
         {
@@ -62,86 +64,84 @@ QString XML::qmon( QList<SiebelItem> list )
             xml += "    <srtype>cr</srtype>\n";
             xml += "    <creator>" + si.creator + "</creator>\n";
             xml += "    <crsr>" + si.crsr + "</crsr>\n";
-	    xml += "    <crsr_cust><![CDATA[" + si.crsrcust + "]]></crsr_cust>\n";
-	    xml += "    <crsr_desc><![CDATA[" + si.crsrdesc + "]]></crsr_desc>\n";
             
         }
         else
         {
             xml += "    <srtype>sr</srtype>\n";
-            xml += "    <cus_account><![CDATA[" + si.customer + "]]></cus_account>\n";
-            xml += "    <cus_num><![CDATA[" + si.cstNum + "]]></cus_num>\n";
+            xml += "    <cus_account><![CDATA[" + si.customer.replace(s_,r_) + "]]></cus_account>\n";
+            xml += "    <cus_num><![CDATA[" + si.cstNum.replace(s_,r_) + "]]></cus_num>\n";
             
             if ( ( !si.contact_firstname.isEmpty() ) && ( si.contact_firstname != "1" ) && ( si.contact_firstname != "0" ) )
             {
-                xml += "    <cus_firstname><![CDATA[" + si.contact_firstname + "]]></cus_firstname>\n";
+                xml += "    <cus_firstname><![CDATA[" + si.contact_firstname.replace(s_,r_) + "]]></cus_firstname>\n";
             }
             
             if ( ( !si.contact_lastname.isEmpty() ) && ( si.contact_lastname != "1" )&& ( si.contact_lastname != "0" )   )
             {
-                xml += "    <cus_lastname><![CDATA[" + si.contact_lastname + "]]></cus_lastname>\n";
+                xml += "    <cus_lastname><![CDATA[" + si.contact_lastname.replace(s_,r_) + "]]></cus_lastname>\n";
             }
             
             if ( ( !si.contact_title.isEmpty() ) && ( si.contact_title != "1" ) && ( si.contact_title != "0" ) )
             {
-                xml += "    <cus_title><![CDATA[" + si.contact_title + "]]></cus_title>\n";
+                xml += "    <cus_title><![CDATA[" + si.contact_title.replace(s_,r_) + "]]></cus_title>\n";
             }
             
             if ( ( !si.contact_email.isEmpty() ) && ( si.contact_email != "1" ) && ( si.contact_email != "0" ) )
             {
-                xml += "    <cus_email><![CDATA[" + si.contact_email + "]]></cus_email>\n";  
+                xml += "    <cus_email><![CDATA[" + si.contact_email.replace(s_,r_) + "]]></cus_email>\n";  
             }
             
             if ( ( !si.contact_phone.isEmpty() ) && ( si.contact_phone != "1" ) && ( si.contact_phone != "0" ) )
             {
-                xml += "    <cus_phone><![CDATA[" + si.contact_phone + "]]></cus_phone>\n";
+                xml += "    <cus_phone><![CDATA[" + si.contact_phone.replace(s_,r_) + "]]></cus_phone>\n";
             }
             
             if ( ( !si.onsite_phone.isEmpty() ) && ( si.onsite_phone != "1" ) && ( si.onsite_phone != "0" ) )
             {
-                xml += "    <cus_onsitephone><![CDATA[" + si.onsite_phone + "]]></cus_onsitephone>\n";
+                xml += "    <cus_onsitephone><![CDATA[" + si.onsite_phone.replace(s_,r_) + "]]></cus_onsitephone>\n";
             }
             
             if ( ( !si.contact_lang.isEmpty() ) && ( si.contact_lang != "1" ) && ( si.contact_lang != "0" ) )
             {
-                xml += "    <cus_lang><![CDATA[" + si.contact_lang + "]]></cus_lang>\n";
+                xml += "    <cus_lang><![CDATA[" + si.contact_lang.replace(s_,r_) + "]]></cus_lang>\n";
             }
             
             if ( !si.alt_contact.isEmpty() )
             {
-                xml += "    <alt_contact><![CDATA[" + si.alt_contact + "]]></alt_contact>\n";
+                xml += "    <alt_contact><![CDATA[" + si.alt_contact.replace(s_,r_) + "]]></alt_contact>\n";
             }
         }
 
-        xml += "    <severity><![CDATA[" + si.severity + "]]></severity>\n";
-        xml += "    <status><![CDATA[" + si.status + "]]></status>\n";
-        xml += "    <bdesc><![CDATA[" + si.brief_desc + "]]></bdesc>\n";
+        xml += "    <severity><![CDATA[" + si.severity.replace(s_,r_) + "]]></severity>\n";
+        xml += "    <status><![CDATA[" + si.status.replace(s_,r_) + "]]></status>\n";
+        xml += "    <bdesc><![CDATA[" + si.brief_desc.replace(s_,r_) + "]]></bdesc>\n";
         
         if ( ( !si.detailed_desc.isEmpty() ) && ( si.detailed_desc != "1" ) && ( si.detailed_desc != "0" ) )
         {
-            xml += "    <ddesc><![CDATA[" + si.detailed_desc + "]]></ddesc>\n";        
+            xml += "    <ddesc><![CDATA[" + si.detailed_desc.replace(s_,r_) + "]]></ddesc>\n";        
         }
         
-        xml += "    <geo><![CDATA[" + si.geo + "]]></geo>\n";
-        xml += "    <hours><![CDATA[" + si.hours + "]]></hours>\n";
-        xml += "    <source><![CDATA[" + si.source + "]]></source>\n";
-        xml += "    <support_program><![CDATA[" + si.support_program + "]]></support_program>\n";
-        xml += "    <support_program_long><![CDATA[" + si.support_program_long + "]]></support_program_long>\n";
-        xml += "    <routing_product><![CDATA[" + si.routing_product + "]]></routing_product>\n";
-        xml += "    <support_group_routing><![CDATA[" + si.support_group_routing + "]]></support_group_routing>\n";
-        xml += "    <int_type><![CDATA[" + si.int_type + "]]></int_type>\n";
-        xml += "    <subtype><![CDATA[" + si.subtype + "]]></subtype>\n";
-        xml += "    <service_level><![CDATA[" + si.service_level + "]]></service_level>\n";
-        xml += "    <category><![CDATA[" + si.category + "]]></category>\n";
+        xml += "    <geo><![CDATA[" + si.geo.replace(s_,r_) + "]]></geo>\n";
+        xml += "    <hours><![CDATA[" + si.hours.replace(s_,r_) + "]]></hours>\n";
+        xml += "    <source><![CDATA[" + si.source.replace(s_,r_) + "]]></source>\n";
+        xml += "    <support_program><![CDATA[" + si.support_program.replace(s_,r_) + "]]></support_program>\n";
+        xml += "    <support_program_long><![CDATA[" + si.support_program_long.replace(s_,r_) + "]]></support_program_long>\n";
+        xml += "    <routing_product><![CDATA[" + si.routing_product.replace(s_,r_) + "]]></routing_product>\n";
+        xml += "    <support_group_routing><![CDATA[" + si.support_group_routing.replace(s_,r_) + "]]></support_group_routing>\n";
+        xml += "    <int_type><![CDATA[" + si.int_type.replace(s_,r_) + "]]></int_type>\n";
+        xml += "    <subtype><![CDATA[" + si.subtype.replace(s_,r_) + "]]></subtype>\n";
+        xml += "    <service_level><![CDATA[" + si.service_level.replace(s_,r_) + "]]></service_level>\n";
+        xml += "    <category><![CDATA[" + si.category.replace(s_,r_) + "]]></category>\n";
         
         if ( !si.respond_via.isEmpty() )
         {
-            xml += "    <respond_via><![CDATA[" + si.respond_via + "]]></respond_via>\n";      
+            xml += "    <respond_via><![CDATA[" + si.respond_via.replace(s_,r_) + "]]></respond_via>\n";      
         }
         
         if ( !si.bugId.isEmpty() )
         {
-            xml += "    <bug><![CDATA[" + si.bugId + "]]></bug>\n";
+            xml += "    <bug><![CDATA[" + si.bugId.replace(s_,r_) + "]]></bug>\n";
             //xml += "    <bug_desc>" + si.bugDesc + "</bug_desc>\n";
         }
         
@@ -169,7 +169,7 @@ QString XML::qmon( QList<SiebelItem> list )
         
         if ( !si.subowner.isEmpty() )
         {
-            xml += "    <subowner><![CDATA[" + si.subowner + "]]></subowner>\n";      
+            xml += "    <subowner><![CDATA[" + si.subowner.replace(s_,r_) + "]]></subowner>\n";      
         }
         
         xml += "  </sr>\n";
@@ -184,6 +184,8 @@ QString XML::qmonDate( QList<SiebelItem> list )
 {   
     QString xml;
     QDateTime now = QDateTime::currentDateTime();
+    QString s_ = "]]>";
+    QString r_ = "]]]]><![CDATA[>";
     
     xml += "<qmon>\n";
     
@@ -193,12 +195,12 @@ QString XML::qmonDate( QList<SiebelItem> list )
         QDateTime sladate = QDateTime::fromString( si.sla, "yyyy-MM-dd hh:mm:ss" );
 
         xml += "  <sr>\n";
-        xml += "    <id><![CDATA[" + si.id + "]]></id>\n";
-        xml += "    <queue><![CDATA[" + si.queue + "]]></queue>\n";
+        xml += "    <id><![CDATA[" + si.id.replace(s_,r_) + "]]></id>\n";
+        xml += "    <queue><![CDATA[" + si.queue.replace(s_,r_) + "]]></queue>\n";
     
         if ( si.isChat )
         {
-            xml += "    <bomgarQ>" + si.bomgarQ + "</bomgarQ>\n";
+            xml += "    <bomgarQ>" + si.bomgarQ.replace(s_,r_) + "</bomgarQ>\n";
         }
 
         if ( si.isCr )
@@ -206,44 +208,41 @@ QString XML::qmonDate( QList<SiebelItem> list )
             xml += "    <srtype>cr</srtype>\n";
             xml += "    <creator>" + si.creator + "</creator>\n";
             xml += "    <crsr>" + si.crsr + "</crsr>\n";
-	    xml += "    <crsr_cust>" + si.crsrcust + "</crsr_cust>\n";
-	    xml += "    <crsr_desc>" + si.crsrdesc + "</crsr_desc>\n";
-            
         }
         else
         {
             xml += "    <srtype>sr</srtype>\n";
-            xml += "    <cus_account><![CDATA[" + si.customer + "]]></cus_account>\n";
-            xml += "    <cus_num><![CDATA[" + si.cstNum + "]]></cus_num>\n";
+            xml += "    <cus_account><![CDATA[" + si.customer.replace(s_,r_) + "]]></cus_account>\n";
+            xml += "    <cus_num><![CDATA[" + si.cstNum.replace(s_,r_) + "]]></cus_num>\n";
             
             if ( ( !si.contact_firstname.isEmpty() ) && ( si.contact_firstname != "1" ) && ( si.contact_firstname != "0" ) )
             {
-                xml += "    <cus_firstname><![CDATA[" + si.contact_firstname + "]]></cus_firstname>\n";
+                xml += "    <cus_firstname><![CDATA[" + si.contact_firstname.replace(s_,r_) + "]]></cus_firstname>\n";
             }
             
             if ( ( !si.contact_lastname.isEmpty() ) && ( si.contact_lastname != "1" )&& ( si.contact_lastname != "0" )   )
             {
-                xml += "    <cus_lastname><![CDATA[" + si.contact_lastname + "]]></cus_lastname>\n";
+                xml += "    <cus_lastname><![CDATA[" + si.contact_lastname.replace(s_,r_) + "]]></cus_lastname>\n";
             }
             
             if ( ( !si.contact_title.isEmpty() ) && ( si.contact_title != "1" ) && ( si.contact_title != "0" ) )
             {
-                xml += "    <cus_title><![CDATA[" + si.contact_title + "]]></cus_title>\n";
+                xml += "    <cus_title><![CDATA[" + si.contact_title.replace(s_,r_) + "]]></cus_title>\n";
             }
             
             if ( ( !si.contact_email.isEmpty() ) && ( si.contact_email != "1" ) && ( si.contact_email != "0" ) )
             {
-                xml += "    <cus_email><![CDATA[" + si.contact_email + "]]></cus_email>\n";  
+                xml += "    <cus_email><![CDATA[" + si.contact_email.replace(s_,r_) + "]]></cus_email>\n";  
             }
             
             if ( ( !si.contact_phone.isEmpty() ) && ( si.contact_phone != "1" ) && ( si.contact_phone != "0" ) )
             {
-                xml += "    <cus_phone><![CDATA[" + si.contact_phone + "]]></cus_phone>\n";
+                xml += "    <cus_phone><![CDATA[" + si.contact_phone.replace(s_,r_) + "]]></cus_phone>\n";
             }
             
             if ( ( !si.onsite_phone.isEmpty() ) && ( si.onsite_phone != "1" ) && ( si.onsite_phone != "0" ) )
             {
-                xml += "    <cus_onsitephone><![CDATA[" + si.onsite_phone + "]]></cus_onsitephone>\n";
+                xml += "    <cus_onsitephone><![CDATA[" + si.onsite_phone.replace(s_,r_) + "]]></cus_onsitephone>\n";
             }
             
             if ( ( !si.contact_lang.isEmpty() ) && ( si.contact_lang != "1" ) && ( si.contact_lang != "0" ) )
@@ -252,30 +251,30 @@ QString XML::qmonDate( QList<SiebelItem> list )
             }
         }
 
-        xml += "    <severity><![CDATA[" + si.severity + "]]></severity>\n";
-        xml += "    <status><![CDATA[" + si.status + "]]></status>\n";
-        xml += "    <bdesc><![CDATA[" + si.brief_desc + "]]></bdesc>\n";
+        xml += "    <severity><![CDATA[" + si.severity.replace(s_,r_) + "]]></severity>\n";
+        xml += "    <status><![CDATA[" + si.status.replace(s_,r_) + "]]></status>\n";
+        xml += "    <bdesc><![CDATA[" + si.brief_desc.replace(s_,r_) + "]]></bdesc>\n";
         
         if ( ( !si.detailed_desc.isEmpty() ) && ( si.detailed_desc != "1" ) && ( si.detailed_desc != "0" ) )
         {
-            xml += "    <ddesc><![CDATA[" + si.detailed_desc + "]]></ddesc>\n";        
+            xml += "    <ddesc><![CDATA[" + si.detailed_desc.replace(s_,r_) + "]]></ddesc>\n";        
         }
         
-        xml += "    <geo><![CDATA[" + si.geo + "]]></geo>\n";
-        xml += "    <hours><![CDATA[" + si.hours + "]]></hours>\n";
-        xml += "    <source><![CDATA[" + si.source + "]]></source>\n";
-        xml += "    <support_program><![CDATA[" + si.support_program + "]]></support_program>\n";
-        xml += "    <support_program_long><![CDATA[" + si.support_program_long + "]]></support_program_long>\n";
-        xml += "    <routing_product><![CDATA[" + si.routing_product + "]]></routing_product>\n";
-        xml += "    <support_group_routing><![CDATA[" + si.support_group_routing + "]]></support_group_routing>\n";
-        xml += "    <int_type><![CDATA[" + si.int_type + "]]></int_type>\n";
-        xml += "    <subtype><![CDATA[" + si.subtype + "]]></subtype>\n";
-        xml += "    <service_level><![CDATA[" + si.service_level + "]]></service_level>\n";
-        xml += "    <category><![CDATA[" + si.category + "]]></category>\n";
+        xml += "    <geo><![CDATA[" + si.geo.replace(s_,r_) + "]]></geo>\n";
+        xml += "    <hours><![CDATA[" + si.hours.replace(s_,r_) + "]]></hours>\n";
+        xml += "    <source><![CDATA[" + si.source.replace(s_,r_) + "]]></source>\n";
+        xml += "    <support_program><![CDATA[" + si.support_program.replace(s_,r_) + "]]></support_program>\n";
+        xml += "    <support_program_long><![CDATA[" + si.support_program_long.replace(s_,r_) + "]]></support_program_long>\n";
+        xml += "    <routing_product><![CDATA[" + si.routing_product.replace(s_,r_) + "]]></routing_product>\n";
+        xml += "    <support_group_routing><![CDATA[" + si.support_group_routing.replace(s_,r_) + "]]></support_group_routing>\n";
+        xml += "    <int_type><![CDATA[" + si.int_type.replace(s_,r_) + "]]></int_type>\n";
+        xml += "    <subtype><![CDATA[" + si.subtype.replace(s_,r_) + "]]></subtype>\n";
+        xml += "    <service_level><![CDATA[" + si.service_level.replace(s_,r_) + "]]></service_level>\n";
+        xml += "    <category><![CDATA[" + si.category.replace(s_,r_) + "]]></category>\n";
         
         if ( !si.respond_via.isEmpty() )
         {
-            xml += "    <respond_via><![CDATA[" + si.respond_via + "]]></respond_via>\n";      
+            xml += "    <respond_via><![CDATA[" + si.respond_via.replace(s_,r_) + "]]></respond_via>\n";      
         }
         
         xml += "    <created>" + si.created + "</created>\n";
@@ -325,6 +324,8 @@ QString XML::queue( QList<QueueItem> list )
 QString XML::ltssCust( QList<LTSScustomer> list )
 {   
     QString xml;
+    QString s_ = "]]>";
+    QString r_ = "]]]]><![CDATA[>";
     
     xml += "<ltsscustomers>\n";
     
@@ -333,16 +334,16 @@ QString XML::ltssCust( QList<LTSScustomer> list )
         LTSScustomer cu = list.at( i );
         
         xml += "  <customer>\n";
-        xml += "    <account_name><![CDATA[" + cu.account_name + "]]></account_name>\n";
-        xml += "    <oracle_customer_nr><![CDATA[" + cu.oracle_customer_nr + "]]></oracle_customer_nr>\n";
-        xml += "    <geo><![CDATA[" + cu.geo + "]]></geo>\n";
-        xml += "    <support_program><![CDATA[" + cu.support_program + "]]></support_program>\n";
-        xml += "    <agreement_nr><![CDATA[" + cu.agreement_nr + "]]></agreement_nr>\n";
-        xml += "    <agreement_status><![CDATA[" + cu.agreement_status + "]]></agreement_status>\n";
-        xml += "    <entitlement_id><![CDATA[" + cu.entitlement_id + "]]></entitlement_id>\n";
-        xml += "    <entitlement_name><![CDATA[" + cu.entitlement_name + "]]></entitlement_name>\n";
-        xml += "    <entitlement_start_date><![CDATA[" + cu.entitlement_start_date + "]]></entitlement_start_date>\n";
-        xml += "    <entitlement_end_date><![CDATA[" + cu.entitlement_end_date + "]]></entitlement_end_date>\n";
+        xml += "    <account_name><![CDATA[" + cu.account_name.replace(s_,r_) + "]]></account_name>\n";
+        xml += "    <oracle_customer_nr><![CDATA[" + cu.oracle_customer_nr.replace(s_,r_) + "]]></oracle_customer_nr>\n";
+        xml += "    <geo><![CDATA[" + cu.geo.replace(s_,r_) + "]]></geo>\n";
+        xml += "    <support_program><![CDATA[" + cu.support_program.replace(s_,r_) + "]]></support_program>\n";
+        xml += "    <agreement_nr><![CDATA[" + cu.agreement_nr.replace(s_,r_) + "]]></agreement_nr>\n";
+        xml += "    <agreement_status><![CDATA[" + cu.agreement_status.replace(s_,r_) + "]]></agreement_status>\n";
+        xml += "    <entitlement_id><![CDATA[" + cu.entitlement_id.replace(s_,r_) + "]]></entitlement_id>\n";
+        xml += "    <entitlement_name><![CDATA[" + cu.entitlement_name.replace(s_,r_) + "]]></entitlement_name>\n";
+        xml += "    <entitlement_start_date><![CDATA[" + cu.entitlement_start_date.replace(s_,r_) + "]]></entitlement_start_date>\n";
+        xml += "    <entitlement_end_date><![CDATA[" + cu.entitlement_end_date.replace(s_,r_) + "]]></entitlement_end_date>\n";
         xml += "  </customer>\n";
     }
     
@@ -355,90 +356,90 @@ QString XML::ltssCust( QList<LTSScustomer> list )
 QString XML::sr( QueueItem qi )
 {
     QString xml;
+    QString s_ = "]]>";
+    QString r_ = "]]]]><![CDATA[>";
 
     xml += "  <sr>\n";
-    xml += "    <id><![CDATA[" + qi.id + "]]></id>\n";
+    xml += "    <id><![CDATA[" + qi.id.replace(s_,r_) + "]]></id>\n";
     
     if ( qi.isCr )
     {
         xml += "    <srtype>cr</srtype>\n";
         xml += "    <creator>" + qi.creator + "</creator>\n";
         xml += "    <crsr>" + qi.crsr + "</crsr>\n";
-	xml += "    <crsr_cust><![CDATA[" + qi.crsrcust + "]]></crsr_cust>\n";
-	xml += "    <crsr_desc><![CDATA[" + qi.crsrdesc + "]]></crsr_desc>\n";
     }
     else
     {
         xml += "    <srtype>sr</srtype>\n";
-        xml += "    <cus_account><![CDATA[" + qi.customer + "]]></cus_account>\n";
-        xml += "    <cus_num><![CDATA[" + qi.cstNum + "]]></cus_num>\n";
+        xml += "    <cus_account><![CDATA[" + qi.customer.replace(s_,r_) + "]]></cus_account>\n";
+        xml += "    <cus_num><![CDATA[" + qi.cstNum.replace(s_,r_) + "]]></cus_num>\n";
         
         if ( ( !qi.contact_firstname.isEmpty() ) && ( qi.contact_firstname != "1" ) && ( qi.contact_firstname != "0" ) )
         {
-            xml += "    <cus_firstname><![CDATA[" + qi.contact_firstname + "]]></cus_firstname>\n";
+            xml += "    <cus_firstname><![CDATA[" + qi.contact_firstname.replace(s_,r_) + "]]></cus_firstname>\n";
         }
         
         if ( ( !qi.contact_lastname.isEmpty() ) && ( qi.contact_lastname != "1" )&& ( qi.contact_lastname != "0" )   )
         {
-            xml += "    <cus_lastname><![CDATA[" + qi.contact_lastname + "]]></cus_lastname>\n";
+            xml += "    <cus_lastname><![CDATA[" + qi.contact_lastname.replace(s_,r_) + "]]></cus_lastname>\n";
         }
         
         if ( ( !qi.contact_title.isEmpty() ) && ( qi.contact_title != "1" ) && ( qi.contact_title != "0" ) )
         {
-            xml += "    <cus_title><![CDATA[" + qi.contact_title + "]]></cus_title>\n";
+            xml += "    <cus_title><![CDATA[" + qi.contact_title.replace(s_,r_) + "]]></cus_title>\n";
         }
         
         if ( ( !qi.contact_email.isEmpty() ) && ( qi.contact_email != "1" ) && ( qi.contact_email != "0" ) )
         {
-            xml += "    <cus_email><![CDATA[" + qi.contact_email + "]]></cus_email>\n";  
+            xml += "    <cus_email><![CDATA[" + qi.contact_email.replace(s_,r_) + "]]></cus_email>\n";  
         }
         
         if ( ( !qi.contact_phone.isEmpty() ) && ( qi.contact_phone != "1" ) && ( qi.contact_phone != "0" ) )
         {
-            xml += "    <cus_phone><![CDATA[" + qi.contact_phone + "]]></cus_phone>\n";
+            xml += "    <cus_phone><![CDATA[" + qi.contact_phone.replace(s_,r_) + "]]></cus_phone>\n";
         }
         
         if ( ( !qi.onsite_phone.isEmpty() ) && ( qi.onsite_phone != "1" ) && ( qi.onsite_phone != "0" ) )
         {
-            xml += "    <cus_onsitephone><![CDATA[" + qi.onsite_phone + "]]></cus_onsitephone>\n";
+            xml += "    <cus_onsitephone><![CDATA[" + qi.onsite_phone.replace(s_,r_) + "]]></cus_onsitephone>\n";
         }
         
         if ( ( !qi.contact_lang.isEmpty() ) && ( qi.contact_lang != "1" ) && ( qi.contact_lang != "0" ) )
         {
-            xml += "    <cus_lang><![CDATA[" + qi.contact_lang + "]]></cus_lang>\n";
+            xml += "    <cus_lang><![CDATA[" + qi.contact_lang.replace(s_,r_) + "]]></cus_lang>\n";
         }
         
         if ( !qi.alt_contact.isEmpty() )
         {
-            xml += "    <alt_contact><![CDATA[" + qi.alt_contact + "]]></alt_contact>\n";
+            xml += "    <alt_contact><![CDATA[" + qi.alt_contact.replace(s_,r_) + "]]></alt_contact>\n";
         }
     }
 
-    xml += "    <owner><![CDATA[" + qi.owner + "]]></owner>\n";
+    xml += "    <owner><![CDATA[" + qi.owner.replace(s_,r_) + "]]></owner>\n";
     
     if ( !qi.subOwner.isEmpty() )
     {
-        xml += "    <subowner><![CDATA[" + qi.subOwner + "]]></subowner>\n";
+        xml += "    <subowner><![CDATA[" + qi.subOwner.replace(s_,r_) + "]]></subowner>\n";
     }
     
-    xml += "    <severity><![CDATA[" + qi.severity + "]]></severity>\n";
-    xml += "    <status><![CDATA[" + qi.status + "]]></status>\n";
-    xml += "    <bdesc><![CDATA[" + qi.brief_desc + "]]></bdesc>\n";
+    xml += "    <severity><![CDATA[" + qi.severity.replace(s_,r_) + "]]></severity>\n";
+    xml += "    <status><![CDATA[" + qi.status.replace(s_,r_) + "]]></status>\n";
+    xml += "    <bdesc><![CDATA[" + qi.brief_desc.replace(s_,r_) + "]]></bdesc>\n";
     
     if ( ( !qi.detailed_desc.isEmpty() ) && ( qi.detailed_desc != "1" ) && ( qi.detailed_desc != "0" ) )
     {
-        xml += "    <ddesc><![CDATA[" + qi.detailed_desc + "]]></ddesc>\n";        
+        xml += "    <ddesc><![CDATA[" + qi.detailed_desc.replace(s_,r_) + "]]></ddesc>\n";        
     }
     
     if ( !qi.bugId.isEmpty() )
     {
-        xml += "    <bug><![CDATA[" + qi.bugId + "]]></bug>\n";
-        if ( !qi.bugDesc.isEmpty() ) xml += "    <bug_desc><![CDATA[" + qi.bugDesc + "]]></bug_desc>\n";
+        xml += "    <bug><![CDATA[" + qi.bugId.replace(s_,r_) + "]]></bug>\n";
+        if ( !qi.bugDesc.isEmpty() ) xml += "    <bug_desc><![CDATA[" + qi.bugDesc.replace(s_,r_) + "]]></bug_desc>\n";
     }
     
-    xml += "    <geo><![CDATA[" + qi.geo + "]]></geo>\n";
-    xml += "    <hours><![CDATA[" + qi.hours + "]]></hours>\n";
-    xml += "    <contract><![CDATA[" + qi.support_program + "]]></contract>\n";
+    xml += "    <geo><![CDATA[" + qi.geo.replace(s_,r_) + "]]></geo>\n";
+    xml += "    <hours><![CDATA[" + qi.hours.replace(s_,r_) + "]]></hours>\n";
+    xml += "    <contract><![CDATA[" + qi.support_program.replace(s_,r_) + "]]></contract>\n";
     xml += "    <service_level><![CDATA[" + QString::number( qi.service_level ) + "]]></service_level>\n";
     xml += "    <created>" + qi.created + "</created>\n";
     xml += "    <lastupdate>" + qi.last_update + "</lastupdate>\n";
@@ -463,6 +464,8 @@ QString XML::stats( Statistics s )
     QString xml;
     QList<ClosedItem> closedList = s.closedList;
     QList<CsatItem> csatList = s.csatList;
+    QString s_ = "]]>";
+    QString r_ = "]]]]><![CDATA[>";
     
     int ttsAvg = 0;
     
@@ -530,8 +533,8 @@ QString XML::stats( Statistics s )
         xml += "    <closedsr>\n";
         xml += "      <sr>" + closedList.at(i).sr + "</sr>\n";
         xml += "      <tts>" + QString::number( closedList.at(i).tts ) + "</tts>\n";
-        xml += "      <customer><![CDATA[" + closedList.at(i).customer + "]]></customer>\n";
-        xml += "      <bdesc><![CDATA[" + closedList.at(i).bdesc + "]]></bdesc>\n";
+        xml += "      <customer><![CDATA[" + QString( closedList.at(i).customer).replace(s_,r_) + "]]></customer>\n";
+        xml += "      <bdesc><![CDATA[" + QString( closedList.at(i).bdesc).replace(s_,r_) + "]]></bdesc>\n";
         xml += "    </closedsr>\n\n";
     }
     
@@ -568,8 +571,8 @@ QString XML::stats( Statistics s )
             //xml += "      <srsat>NONE</srsat>\n";
         }
         
-        xml += "      <customer><![CDATA[" + csatList.at(i).customer + "]]></customer>\n";
-        xml += "      <bdesc><![CDATA[" + csatList.at(i).bdesc + "]]></bdesc>\n";
+        xml += "      <customer><![CDATA[" + QString( csatList.at(i).customer).replace(s_,r_) + "]]></customer>\n";
+        xml += "      <bdesc><![CDATA[" + QString( csatList.at(i).bdesc).replace(s_,r_) + "]]></bdesc>\n";
         xml += "    </survey>\n\n";
     }
     

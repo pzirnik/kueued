@@ -213,7 +213,7 @@ void ServerThread::run()
             {  
                 Database::openMysqlDB( mMysqlDB );
                 
-                QRegExp srnr( "^[0-9]{11}$" );
+                QRegExp srnr( "^[0-9]{11,12}$" );
                 QString q = cmd.remove( "/srforcr" );
                 
                 if ( ( q.remove( "/" ).isEmpty() ) || ( !srnr.exactMatch( q.remove( "/" ) ) ) )
@@ -224,7 +224,7 @@ void ServerThread::run()
                 else
                 {  
                     out << text();
-                    out << Database::getSrForCr( q, mMysqlDB, mReportDB, mSiebelDB ).at( 0 );
+                    out << Database::getSrForCr( q, mMysqlDB, mReportDB );
                 }
                 
                 out.flush();
@@ -234,7 +234,7 @@ void ServerThread::run()
                 Database::openSiebelDB( mSiebelDB );
                 Database::openMysqlDB( mMysqlDB );
                 
-                QRegExp srnr( "^[0-9]{11}$" );
+                QRegExp srnr( "^[0-9]{11,12}$" );
                 QString q = cmd.remove( "/srinfo" );
 
                 if ( ( q.remove( "/" ).isEmpty() ) || ( !srnr.exactMatch( q.remove( "/" ) ) ) )
@@ -254,7 +254,7 @@ void ServerThread::run()
             {  
                 Database::openSiebelDB( mSiebelDB );
                 
-                QRegExp srnr( "^[0-9]{11}$" );
+                QRegExp srnr( "^[0-9]{11,12}$" );
                 QString q = cmd.remove( "/srstatus" );
 
                 if ( ( q.remove( "/" ).isEmpty() ) || ( !srnr.exactMatch( q.remove( "/" ) ) ) )

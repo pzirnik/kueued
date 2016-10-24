@@ -27,11 +27,24 @@
 #include <QDebug>
 #include <QtSingleCoreApplication>
 #include <iostream>
+#include "simplecrypt/simplecrypt.h"
+
 
 int main(int argc, char *argv[])
 {
     QtSingleCoreApplication app( argc, argv );
 
+    QStringList arglst = app.arguments();
+    if ( arglst.size() == 3 ) {
+      if ( arglst[1] == "-c" ) {
+	SimpleCrypt crypto( Q_UINT64_C( 0424632454124622 ) );
+	QString pwd;
+	pwd = crypto.encryptToString(arglst[2]);
+	std::cout << pwd.toStdString() << std::endl;
+	return 0;
+      }
+    }
+    
     if ( app.isRunning() )
     {
         std::cout <<  "kueued is already running, exiting";

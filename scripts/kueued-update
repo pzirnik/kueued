@@ -1,24 +1,37 @@
 #!/bin/bash
 
-if [ "$1" == "" ]; then
+IP=$(hostname -f)
+count=0
 
-    echo "Usage: kueued-update hostname"
-    exit
+curl -A kueued-dbupdate --silent http://${IP}:8080/updateDB/full &> /dev/null
 
-fi
+(while ( true ); do
 
-RESULT=$(curl --silent -A "kueued-update @ $HOSTNAME" http://$1:8080/updateDB | tail -1)
+    count=$(($count+1))
 
-if [ "$RESULT" == "UPDATE FINISHED" ]; then
+    if [ "$count" -lt "250" ]; then
 
-    echo "Done :)"
-    exit 0
+        RESULT=$(curl -A kueued-dbupdate --silent http://${IP}:8080/updateDB | tail -1)
 
-else
+    else
 
-    echo $RESULT
-    echo "Something went wrong :("
-    exit 1
+        RESULT=$(curl -A kueued-dbupdate --silent http://${IP}:8080/updateDB/full | tail -1)
+        count=0
 
-fi
+    fi
+
+    echo $(date) > /var/log/kueued/lastdbupdate
+
+    if [ "$RESULT" == "UPDATE FINISHED" ]; then
+
+            echo "$(date +%F\ %X) - Update successful :)"
+
+    else
+            echo "$(date +%F\ %X) - Something went wrong - please check server logs :("
+
+    fi
+
+    sleep 5
+
+done) >> /var/log/kueued/dbupdate.log
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=Kueued server
+Wants=basic.target
+Requires=mysql.service
+After=mysql.service
+
+[Service]
+Restart=on-failure
+Type=simple
+Environment=NLS_LANG=.AL32UTF8
+User=kueued
+Group=kueued
+ExecStart=/bin/sh -c '/usr/bin/kueued 2>&1 >> /var/log/kueued/kueued-debug.log'
+
+[Install]
+WantedBy=multi-user.target
