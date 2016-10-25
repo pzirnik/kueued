@@ -20,10 +20,9 @@ curl -A kueued-dbupdate --silent http://${IP}:8080/updateDB/full &> /dev/null
 
     fi
 
-    echo $(date) > /var/log/kueued/lastdbupdate
-
     if [ "$RESULT" == "UPDATE FINISHED" ]; then
 
+	    echo $(date) > /var/log/kueued/lastdbupdate
             echo "$(date +%F\ %X) - Update successful :)"
 
     else
