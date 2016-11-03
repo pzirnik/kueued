@@ -35,7 +35,8 @@ Kueued::Kueued()
 {
     Debug::print( "kueued", "Constructing" );
     mDB = new Database;
-    mServer = new Server( 8080, this );    
+    mServer = new Server( 8080, this, false );
+    mSslServer = new Server( 8081, this, true );
 }
 
      

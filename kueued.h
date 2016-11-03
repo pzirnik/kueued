@@ -36,6 +36,8 @@
 #include <QtNetwork>
 #include <QNetworkAccessManager>
 
+
+
 class Database;
 class Server;
 
@@ -46,9 +48,10 @@ class Kueued : public QObject
  public:
      Kueued();
      ~Kueued();
-
-    private:
+     
+ private:
         Server *mServer;
+	Server *mSslServer;
         Database* mDB;
         
 };

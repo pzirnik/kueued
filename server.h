@@ -34,15 +34,18 @@
 #include <QStringList>
 #include <QtNetwork>
 #include <QIODevice>
+#include <QTcpServer>
 
 class Server : public QTcpServer
  {
     Q_OBJECT
     
     public:
-        Server(quint16 port, QObject* parent = 0);
+        Server(quint16 port, QObject* parent = 0, bool use_ssl = false);
         ~Server();
         void incomingConnection(int socket);
+	bool ssl;
+
 };
 
 

@@ -27,24 +27,33 @@
 #define SERVERTHREAD_H
 
 #include <QThread>
-#include <QTcpSocket>
 #include <QTime>
 #include <QRunnable>
+#include <QSslSocket>
+
+extern "C" {
+#include <lber.h>
+#include <ldap.h>
+#include <sasl/sasl.h>
+}
 
 #include "network.h"
 
 class Network;
 
-class ServerThread : public QRunnable
+class ServerThread : public QObject, public QRunnable
 {
+    Q_OBJECT
     public:
-        ServerThread( int sd = 0, QObject *parent = 0L );
+        ServerThread( int sd = 0, QObject *parent = 0L, bool ssl = false );
         ~ServerThread();
         
         void run();
+    
 
     private:
         int mSocket;
+	bool mSsl;
         QString mMysqlDB;
         QString mSiebelDB;
         QString mReportDB;
@@ -55,9 +64,11 @@ class ServerThread : public QRunnable
         QString getWF( const QString&, Network*  );
 
         QTime mTime;
-        
+        void send_ok();
+	void send_nok(int error, QString reason);
         QString text();
         QString xml();
+	QSslSocket* socket;
 };
 
 
