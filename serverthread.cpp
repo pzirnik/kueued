@@ -454,7 +454,7 @@ void ServerThread::run()
                 socket->write(out.toUtf8());
 /* userquque */
             } else if ( cmd.startsWith( "/userqueue" ) ) {
-                if (authenticated) {
+                if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
@@ -464,8 +464,14 @@ void ServerThread::run()
                 Database::openMysqlDB( mMysqlDB );
                 QString q = cmd.remove( "/userqueue" );
                 if ( q.startsWith( "/full/" ) ) {
+                    QString eng;
+                    if (Settings::enforceauth()) {
+                      eng = QString::fromUtf8(user.data()).toUpper();
+                    } else {
+                      eng = q.remove( "/full/" ).remove( "/" ).toUpper();
+                    }
                     out=xml();
-                    out.append(XML::queue( Database::getUserQueue( QString::fromUtf8(user.data()).toUpper(), mSiebelDB, mMysqlDB, mReportDB, true ) ));
+                    out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB, true ) ));
                 } else {
                     out=xml();
                     out.append(XML::queue( Database::getUserQueue( QString::fromUtf8(user.data()).toUpper(), mSiebelDB, mMysqlDB, mReportDB ) ));
@@ -473,14 +479,30 @@ void ServerThread::run()
                 socket->write(out.toUtf8());
 /* stats */
             } else if ( cmd.startsWith( "/stats" ) ) {
-                if (authenticated) {
+                if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
+                out=text();
                 Network* net = new Network();
-                QString wf = getWF( QString::fromUtf8(user.data()).toUpper(), net );
+                QString eng;
+                if (Settings::enforceauth()) {
+                  eng = QString::fromUtf8(user.data()).toUpper();
+                } else {
+                  eng = cmd.remove( "/stats" );
+                  if ( eng.remove( "/" ).isEmpty() ) {
+                    out.append("Please specify engineer.\r\n");
+                    socket->write(out.toUtf8());
+                    socket->flush();
+                    socket->waitForBytesWritten();
+                    socket->disconnectFromHost();
+                    delete socket;
+                    return;
+                  }
+                }
+                QString wf = getWF( eng, net );
                 if ( wf == "00000" ) {
                     out.append("Invalid engineer\r\n");
                 } else {

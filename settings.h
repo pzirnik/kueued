@@ -65,6 +65,7 @@ class Settings
 	static QString ldapuri();
 	static QString sslcert();
 	static QString sslkey();
+        static bool enforceauth();
 	
 };    
 

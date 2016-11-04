@@ -217,3 +217,9 @@ QString Settings::sslkey()
   QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
   return settings.value( "sslkey" ).toString();
 }
+
+bool Settings::enforceauth()
+{
+  QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
+  return settings.value( "enforceauth" ).toBool();
+}
