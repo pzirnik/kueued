@@ -124,6 +124,7 @@ void ServerThread::run()
 	/* if request does not start with GET either the client uses
 	 * SSL and we in a non SSL thread or client send a invalid command */
         if (! r.startsWith("GET")) {
+            Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " invalid command from client");
             socket->disconnectFromHost();
             delete socket;
             return;
@@ -137,6 +138,7 @@ void ServerThread::run()
             if (tmp.startsWith( "Authorization: Basic ") ) {
                 QString auth;
                 auth = tmp.remove( "Authorization: Basic ").trimmed();
+                Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " client credentials: " + auth);
                 QByteArray credentials;
                 credentials.append(auth);
                 auth = credentials.fromBase64(credentials);
@@ -164,6 +166,7 @@ void ServerThread::run()
             rc = ldap_simple_bind_s(ld,binddn,password);
             if(rc != LDAP_SUCCESS) {
                /* invalid crendetials */
+                Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " authentication failure.");
                 send_nok(403,"Forbidden");
                 return;
             }
@@ -173,7 +176,7 @@ void ServerThread::run()
         /* kueued host runs a update job, no authentication
          * is needed for his own local connection */
         if ( socket->peerAddress() == socket->localAddress() ) {
-            Debug::print( "serverthread", "local connection");
+            Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " local connection");
             authenticated = true;
         }
         if ( dm.isEmpty() ) {
@@ -181,7 +184,7 @@ void ServerThread::run()
         } else {
             Debug::log( "serverthread", dm + r.trimmed() );
         }
-        Debug::print( "serverthread", dm + r.trimmed() );
+        Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " " + dm + r.trimmed() );
         QStringList tokens = r.split( QRegExp( "[ \r\n][ \r\n]*" ) );
         QString req = tokens[ 0 ];
         QString cmd = tokens[ 1 ];
@@ -294,6 +297,7 @@ void ServerThread::run()
                 if (authenticated) {
                     send_ok();
                 } else {
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied ltssupdate without auth.");
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
@@ -315,6 +319,7 @@ void ServerThread::run()
                 if (authenticated) {
                     send_ok();
                 } else {
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied updateDB without auth.");
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
@@ -425,7 +430,8 @@ void ServerThread::run()
             } else if ( cmd.startsWith( "/assign" ) ) {
                 if (authenticated) {
                     send_ok();
-                } else {
+                } else { 
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied assign without auth.");
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
@@ -457,6 +463,7 @@ void ServerThread::run()
                 if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied userqueue without auth.");
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
@@ -482,6 +489,7 @@ void ServerThread::run()
                 if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied stats without auth.");
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
@@ -498,6 +506,7 @@ void ServerThread::run()
                     socket->flush();
                     socket->waitForBytesWritten();
                     socket->disconnectFromHost();
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request failed.");
                     delete socket;
                     return;
                   }
@@ -655,6 +664,7 @@ void ServerThread::run()
                 socket->disconnectFromHost();
                 socket->waitForDisconnected();
             }
+            Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request finisehd success.");
             delete socket;
         }
     }
@@ -678,6 +688,7 @@ void ServerThread::send_nok(int error, QString reason)
     socket->flush();
     socket->waitForBytesWritten();
     socket->disconnectFromHost();
+    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request failed.");
     delete socket;
 }
 
