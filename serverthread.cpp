@@ -156,6 +156,7 @@ void ServerThread::run()
                 return;
             }
             if(ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &protocol) != LDAP_OPT_SUCCESS) {
+                rc=ldap_destroy(ld);
                 return;
             }
             QByteArray dn;
@@ -165,12 +166,14 @@ void ServerThread::run()
             binddn = dn.data();
             rc = ldap_simple_bind_s(ld,binddn,password);
             if(rc != LDAP_SUCCESS) {
+               rc=ldap_destroy(ld);
                /* invalid crendetials */
                 Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " authentication failure.");
                 send_nok(403,"Forbidden");
                 return;
             }
             /* correct credentials */
+            rc = ldap_unbind(ld);
             authenticated = true;
         }
         /* kueued host runs a update job, no authentication
