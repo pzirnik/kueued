@@ -106,14 +106,18 @@ void ServerThread::run()
         if (mSsl) {
             socket->startServerEncryption();
             socket->waitForEncrypted();
-        }
+        } 
+/*        out = "Welcome to Kueued 5.5.6 (do the needfull)\r\n" ;
+        socket->write(out.toUtf8());
+        socket->flush();
+        socket->waitForBytesWritten();*/
         socket->waitForReadyRead();
     } else {
         delete socket;
         return;
     }
 
-    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " connected" );
+    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " connected using " + ((mSsl) ? "SSL" : "plain") );
     QString dm;
 
     dm += socket->peerAddress().toString();
@@ -121,8 +125,8 @@ void ServerThread::run()
     if ( socket->canReadLine() ) {
         /* read the client request (GET....) */
         QString r = socket->readLine();
-	/* if request does not start with GET either the client uses
-	 * SSL and we in a non SSL thread or client send a invalid command */
+        /* if request does not start with GET either the client uses
+         * SSL and we in a non SSL thread or client send a invalid command */
         if (! r.startsWith("GET")) {
             Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " invalid command from client");
             socket->disconnectFromHost();
@@ -183,9 +187,9 @@ void ServerThread::run()
             authenticated = true;
         }
         if ( dm.isEmpty() ) {
-            Debug::log( "serverthread", " - " + r.trimmed() );
+            Debug::log( "serverthread", " - " + r.trimmed() + " using " + ((mSsl) ? "SSL" : "plain") );
         } else {
-            Debug::log( "serverthread", dm + r.trimmed() );
+            Debug::log( "serverthread", dm + r.trimmed() + " using " + ((mSsl) ? "SSL" : "plain") );
         }
         Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " " + dm + r.trimmed() );
         QStringList tokens = r.split( QRegExp( "[ \r\n][ \r\n]*" ) );
@@ -607,6 +611,12 @@ void ServerThread::run()
                     }
                 }
                 delete net;
+                socket->write(out.toUtf8());
+/* productmenu */
+            } else if ( cmd.startsWith( "/productmenu" ) ) {
+                send_ok();
+                out=xml();
+                out.append(XML::SendMenu());
                 socket->write(out.toUtf8());
 /* default */
             } else {
