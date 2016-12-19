@@ -29,9 +29,9 @@
 #include <iostream>
 #include "simplecrypt/simplecrypt.h"
 
-
 int main(int argc, char *argv[])
 {
+    
     QtSingleCoreApplication app( argc, argv );
 
     QStringList arglst = app.arguments();
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	pwd = crypto.encryptToString(arglst[2]);
 	std::cout << pwd.toStdString() << std::endl;
 	return 0;
-      }
+      } 
     }
     
     if ( app.isRunning() )
@@ -55,6 +55,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName( "kueued" );
     QCoreApplication::setApplicationVersion( "git" );
 
-     Kueued k;
-     return app.exec();
+    Kueued k;
+    return app.exec();
 }

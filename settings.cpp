@@ -199,3 +199,27 @@ QString Settings::l3ApiKey()
     QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
     return settings.value( "l3ApiKey" ).toString();
 }
+
+QString Settings::ldapuri()
+{
+  QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
+  return settings.value( "ldapuri" ).toString();
+}
+
+QString Settings::sslcert()
+{
+  QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
+  return settings.value( "sslcert" ).toString();
+}
+
+QString Settings::sslkey()
+{
+  QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
+  return settings.value( "sslkey" ).toString();
+}
+
+bool Settings::enforceauth()
+{
+  QSettings settings( "/etc/kueued.conf", QSettings::NativeFormat);
+  return settings.value( "enforceauth" ).toBool();
+}

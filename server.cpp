@@ -34,14 +34,14 @@
 #include <QThread>
 #include <QThreadPool>
 
-Server::Server( quint16 port, QObject* parent )
-    : QTcpServer( parent )
+Server::Server( quint16 port, QObject* parent, bool use_ssl ) : QTcpServer( parent )
 {
-    Debug::print( "server", "Constructing " + QString::number( thread()->currentThreadId() ) );
-    
+    Debug::print( "server", "Constructing " + QString::number( thread()->currentThreadId() ) + " SSL=" + QString::number(use_ssl) );
+
     QThreadPool::globalInstance()->setExpiryTimeout( -1 );
-    QThreadPool::globalInstance()->setMaxThreadCount( 32 ); 
+    QThreadPool::globalInstance()->setMaxThreadCount( 32 );
     
+    ssl = use_ssl;
     listen( QHostAddress::Any, port );   
 }
 
@@ -52,7 +52,7 @@ Server::~Server()
 
 void Server::incomingConnection( int socket )
 {
-    ServerThread* q = new ServerThread( socket );
+    ServerThread* q = new ServerThread( socket, this, ssl );
     QThreadPool::globalInstance()->start( q );
 }
 

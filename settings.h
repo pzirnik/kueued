@@ -62,6 +62,11 @@ class Settings
         static int timezoneCorrection();
         static bool logQueries();
         static bool debugLog();
+	static QString ldapuri();
+	static QString sslcert();
+	static QString sslkey();
+        static bool enforceauth();
+	
 };    
 
 #endif

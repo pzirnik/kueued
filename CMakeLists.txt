@@ -34,7 +34,7 @@ INCLUDE_DIRECTORIES(  ${QT_INCLUDES}
                       ${CMAKE_CURRENT_BINARY_DIR} 
                       ${CMAKE_CURRENT_SOURCE_DIR} ) 
 
-ADD_DEFINITIONS( ${QT_DEFINITIONS} )
+ADD_DEFINITIONS( ${QT_DEFINITIONS} -DLDAP_DEPRECATED)
 
 SET( QT_USE_QTSQL TRUE )
 SET( QT_USE_QTNETWORK TRUE )
@@ -73,7 +73,8 @@ TARGET_LINK_LIBRARIES( kueued     ${QT_LIBRARIES}
                                   ${QT_QTNETWORK_LIBRARY} 
                                   ${QT_QTXML_LIBRARY}
                                   ${QT_SINGLEAPP_LIBRARY} 
-                                  ${QT_SERVICE_LIBRARY} )
+                                  ${QT_SERVICE_LIBRARY}
+                                  ldap lber )
 
 
 

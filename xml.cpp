@@ -581,3 +581,13 @@ QString XML::stats( Statistics s )
     
     return xml;
 }
+
+QString XML::SendMenu() {
+  QString xml;
+  QFile f("/etc/kueued-menu.xml");
+  if (f.open(QFile::ReadOnly | QFile::Text)) {
+      QTextStream in(&f);
+      xml=in.readAll();
+  }
+  return xml;
+}

@@ -42,6 +42,7 @@ class XML
         static QString ltssCust( QList<LTSScustomer> );
         static QString sr( QueueItem );
         static QString stats( Statistics );
+        static QString SendMenu();
     
 };
 
