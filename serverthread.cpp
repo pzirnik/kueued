@@ -477,8 +477,8 @@ void ServerThread::run()
                 Database::openSiebelDB( mSiebelDB );
                 Database::openMysqlDB( mMysqlDB );
                 QString q = cmd.remove( "/userqueue" );
+                QString eng;
                 if ( q.startsWith( "/full/" ) ) {
-                    QString eng;
                     if (Settings::enforceauth()) {
                       eng = QString::fromUtf8(user.data()).toUpper();
                     } else {
@@ -487,8 +487,13 @@ void ServerThread::run()
                     out=xml();
                     out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB, true ) ));
                 } else {
+                    if (Settings::enforceauth()) {
+                      eng = QString::fromUtf8(user.data()).toUpper();
+                    } else {
+                      eng = q.remove( "/" ).toUpper();
+                    }
                     out=xml();
-                    out.append(XML::queue( Database::getUserQueue( QString::fromUtf8(user.data()).toUpper(), mSiebelDB, mMysqlDB, mReportDB ) ));
+                    out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB ) ));
                 }
                 socket->write(out.toUtf8());
 /* stats */
@@ -525,7 +530,7 @@ void ServerThread::run()
                     Database::openSiebelDB( mSiebelDB );
                     Statistics statz;
                     QString numbers;
-                    QNetworkReply* r = net->get( QUrl( "http://proetus.provo.novell.com/qmon/closed2.asp?tse=" + QString::fromUtf8(user.data()).toUpper() ) );
+                    QNetworkReply* r = net->get( QUrl( "http://proetus.provo.novell.com/qmon/closed2.asp?tse=" + eng ) );
                     QEventLoop loop;
                     QObject::connect( r, SIGNAL( finished() ), &loop, SLOT( quit() ) );
                     loop.exec();
@@ -548,7 +553,7 @@ void ServerThread::run()
                         csat = "ERROR";
                     }
                     QString tts;
-                    QNetworkReply* ttr = net->get( QUrl( "http://proetus.provo.novell.com/qmon/timetosolutiontse.asp?tse=" + QString::fromUtf8(user.data()).toUpper() ) );
+                    QNetworkReply* ttr = net->get( QUrl( "http://proetus.provo.novell.com/qmon/timetosolutiontse.asp?tse=" + eng ) );
                     QObject::connect( ttr, SIGNAL( finished() ), &loop, SLOT( quit() ) );
                     loop.exec();
                     QStringList ttsList;
