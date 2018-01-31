@@ -33,82 +33,11 @@
 
 Database::Database()
 {   
-    QSqlDatabase mysqlDB = QSqlDatabase::addDatabase( "QMYSQL", "mysqlDB" );
-    
-    mysqlDB.setHostName( Settings::mysqlHost() );
-    mysqlDB.setDatabaseName( Settings::mysqlDatabase() );
-    mysqlDB.setUserName( Settings::mysqlUser() );
-    mysqlDB.setPassword( Settings::mysqlPassword() );
-    
-    if ( !mysqlDB.open() )
-    {
-        Debug::print( "database", "Failed to open the database " + mysqlDB.lastError().text() );
-    }
-    
-    QSqlDatabase qmonDB = QSqlDatabase::addDatabase( "QODBC", "qmonDB" );
-    
-    qmonDB.setDatabaseName( Settings::qmonDbDatabase() );
-    qmonDB.setUserName( Settings::qmonDbUser() );
-    qmonDB.setPassword( Settings::qmonDbPassword() );
-    
-    if ( !qmonDB.open() )
-    {
-        Debug::print( "database", "Failed to open the Qmon DB " + qmonDB.lastError().text() );
-    }
-    
-    QSqlDatabase siebelDB = QSqlDatabase::addDatabase( "QOCI", "siebelDB" );
-
-    siebelDB.setDatabaseName( Settings::siebelDatabase() );
-    siebelDB.setHostName( Settings::siebelHost() );
-    siebelDB.setPort( 1521 );
-    siebelDB.setUserName( Settings::siebelUser() );
-    siebelDB.setPassword( Settings::siebelPassword() );
-
-    if ( !siebelDB.open() )
-    {
-        Debug::print( "database", "Failed to open the Siebel DB " + siebelDB.lastError().text() );
-    }
-    
-    QSqlDatabase reportDB = QSqlDatabase::addDatabase( "QOCI", "reportDB" );
-
-    reportDB.setDatabaseName( Settings::reportDatabase() );
-    reportDB.setHostName( Settings::reportHost() );
-    reportDB.setPort( 1521 );
-    reportDB.setUserName( Settings::reportUser() );
-    reportDB.setPassword( Settings::reportPassword() );
-
-    if ( !siebelDB.open() )
-    {
-        Debug::print( "database", "Failed to open the Report DB " + reportDB.lastError().text() );
-    }
+    Debug::print( "database", "Constructing" );
 }
 
 Database::~Database()
 {   
-    if ( QSqlDatabase::database( "mysqlDB" ).isOpen() )
-    {
-        QSqlDatabase::database( "mysqlDB" ).close();
-        QSqlDatabase::removeDatabase( "mysqlDB" );
-    }
-    
-    if ( QSqlDatabase::database( "qmonDB" ).isOpen() )
-    {
-        QSqlDatabase::database( "qmonDB" ).close();
-        QSqlDatabase::removeDatabase( "qmonDB" );
-    }
-     
-    if ( QSqlDatabase::database( "siebelDB" ).isOpen() )
-    {
-        QSqlDatabase::database( "siebelDB" ).close();
-        QSqlDatabase::removeDatabase( "siebelDB" );
-    }
-
-    if ( QSqlDatabase::database( "reportDB" ).isOpen() )
-    {
-        QSqlDatabase::database( "reportDB" ).close();
-        QSqlDatabase::removeDatabase( "reportDB" );
-    }
- 
     Debug::print( "database", "Destroying" );
 }
 
@@ -118,15 +47,7 @@ void Database::insertSiebelItemIntoDB( SiebelItem item, const QString& dbname )
 
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname ); 
     db.transaction();
     
     QSqlQuery query( db );
@@ -200,15 +121,7 @@ bool Database::checkLTSSbyId( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -255,15 +168,7 @@ QString Database::getSrForCrMysql( const QString& cr, const QString& dbname )
     QSqlDatabase db;
     QString sr;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -290,24 +195,8 @@ QString Database::getSrForCrReport( const QString& cr, const QString& dbname1, c
     QSqlDatabase db1;
     QString sr;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "reportDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
-    if ( dbname1.isNull() ) 
-    {
-        db1 = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db1 = QSqlDatabase::database( dbname1 );
-    }
-    
+    db = QSqlDatabase::database( dbname );
+    db1 = QSqlDatabase::database( dbname1 );
     db.transaction();
     
     QSqlQuery query( db );
@@ -348,15 +237,7 @@ QList< LTSScustomer > Database::getLTSScustomersExt( const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "reportDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -412,15 +293,7 @@ QList< LTSScustomer > Database::getLTSScustomers( const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -459,24 +332,8 @@ void Database::updateSiebelItem( SiebelItem item, const QString& dbname, const Q
     QSqlDatabase db;
     QSqlDatabase db1;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
-    if ( dbname1.isNull() ) 
-    {
-        db1 = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db1 = QSqlDatabase::database( dbname1 );
-    }
-    
+    db = QSqlDatabase::database( dbname );
+    db1 = QSqlDatabase::database( dbname1 );
     db.transaction();
     db1.transaction();
     
@@ -553,16 +410,9 @@ QString Database::getDetDesc( const QString& sr, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
 
     query.prepare( "SELECT DESC_TEXT FROM SIEBEL.S_SRV_REQ WHERE SR_NUM = :sr" );
@@ -588,15 +438,7 @@ void Database::updateSiebelQueue( SiebelItem si, const QString& dbname )
     
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -618,15 +460,7 @@ QString Database::getCreator(const QString& sr, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -656,16 +490,8 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
     QSqlDatabase db;
     QSqlDatabase mysqldb;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-        mysqldb = QSqlDatabase::database( mysqlname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
+    mysqldb = QSqlDatabase::database( mysqlname );
     db.transaction();
     mysqldb.transaction();
     
@@ -857,16 +683,8 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
     QSqlDatabase db;
     QSqlDatabase mysqldb;
      
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-        mysqldb = QSqlDatabase::database( mysqlname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
+    mysqldb = QSqlDatabase::database( mysqlname );
     db.transaction();
     mysqldb.transaction();
     
@@ -1048,15 +866,7 @@ QString Database::getSrStatus( const QString& sr, const QString& dbname )
 {
     QSqlDatabase db;
         
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -1089,24 +899,8 @@ void Database::updatePseudoQueues( const QString& qDb, const QString& mDb )
     QSqlDatabase qdb;
     QSqlDatabase mdb;
     
-    if ( qDb.isNull() ) 
-    {
-        qdb = QSqlDatabase::database( "qmonDB" );
-    }
-    else
-    {
-        qdb = QSqlDatabase::database( qDb );
-    }
-    
-    if ( mDb.isNull() ) 
-    {
-        mdb = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        mdb = QSqlDatabase::database( mDb );
-    }
-    
+    qdb = QSqlDatabase::database( qDb );
+    mdb = QSqlDatabase::database( mDb );
     qdb.transaction();
     mdb.transaction();
     
@@ -1133,24 +927,8 @@ void Database::updateLTSScustomers( const QString& rDb, const QString& mDb )
     QSqlDatabase mdb;
     QList< LTSScustomer > list;
     
-    if ( rDb.isNull() ) 
-    {
-        list = getLTSScustomersExt( "reportDB" );
-    }
-    else
-    {
-        list = getLTSScustomersExt( rDb );
-    }
-    
-    if ( mDb.isNull() ) 
-    {
-        mdb = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        mdb = QSqlDatabase::database( mDb );
-    }
-    
+    list = getLTSScustomersExt( rDb );
+    mdb = QSqlDatabase::database( mDb );
     mdb.transaction();
     
     QSqlQuery delquery( mdb );
@@ -1192,15 +970,7 @@ QStringList Database::getPseudoQueues( const QString& dbname )
     QStringList list;
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     
     QSqlQuery query( db );
@@ -1223,15 +993,7 @@ void Database::deleteSiebelItemFromDB( const QString& id, const QString& dbname 
     
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     QSqlQuery query( db );
     
@@ -1257,16 +1019,9 @@ QStringList Database::getQmonSiebelList( const QString& dbname)
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
    
     QStringList l;
@@ -1290,15 +1045,7 @@ QStringList Database::getSrnumsForQueue( const QString& queue, const QString& ge
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     QSqlQuery query( db );
    
@@ -1325,15 +1072,7 @@ bool Database::siebelExistsInDB( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     QSqlQuery query( db );
     
@@ -1359,15 +1098,7 @@ bool Database::siebelQueueChanged( SiebelItem si, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     QSqlQuery query( db );
     
@@ -1400,16 +1131,9 @@ bool Database::siebelSeverityChanged( SiebelItem si, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT SEVERITY FROM QMON_SIEBEL WHERE ( ID = :id )" );
@@ -1441,16 +1165,9 @@ bool Database::isChat( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT ID FROM QMON_CHAT WHERE ( SR = :id )" );
@@ -1475,16 +1192,9 @@ QString Database::getQmonBdesc( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT BDESC FROM QMON_SIEBEL WHERE ( ID = :id )" );
@@ -1512,16 +1222,9 @@ void Database::updateBomgarItemInDB( BomgarItem bi, const QString& dbname )
         
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "INSERT INTO QMON_CHAT( ID, SR, NAME, DATE ) VALUES ( :id, :sr, :name, :date )" );
@@ -1542,15 +1245,7 @@ void Database::deleteBomgarItemFromDB( const QString& id, const QString& dbname 
     
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
     QSqlQuery query( db );
     
@@ -1567,16 +1262,9 @@ QList< SiebelItem > Database::getSrsForQueue( const QString& queue, const QStrin
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     QList< SiebelItem > list;
@@ -1688,16 +1376,9 @@ QStringList Database::getCurrentBomgars( const QString& dbname )
     QStringList list;
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
 
     query.prepare( "SELECT SR, NAME FROM QMON_CHAT" );
@@ -1720,16 +1401,9 @@ QStringList Database::getQmonBomgarList( const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     QStringList l;
     
@@ -1752,16 +1426,9 @@ bool Database::bomgarExistsInDB( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT ID FROM QMON_CHAT WHERE ( ID = :id )" );
@@ -1787,16 +1454,9 @@ void Database::updateBomgarQueue( BomgarItem bi, const QString& dbname )
     
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "UPDATE QMON_CHAT SET NAME = :name WHERE ID = :id" );
@@ -1812,16 +1472,9 @@ QString Database::getBomgarQueue( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT NAME FROM QMON_CHAT WHERE ( SR = :id )" );
@@ -1845,16 +1498,9 @@ QString Database::getBomgarQueueById( const QString& id, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT NAME FROM QMON_CHAT WHERE ( ID = :id )" );
@@ -1889,16 +1535,9 @@ QList< SiebelItem > Database::getQmonSrs( const QString& dbname, const QString& 
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     QList< SiebelItem > list;
@@ -2218,16 +1857,9 @@ QStringList Database::srInfo( const QString& sr, const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "siebelDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT SR_TITLE, g.FST_NAME, g.LAST_NAME, ext.NAME "
@@ -2256,16 +1888,9 @@ QList< BomgarItem > Database::getChats( const QString& dbname )
 {
     QSqlDatabase db;
     
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "qmonDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     QList< BomgarItem > list;
@@ -2325,16 +1950,9 @@ QString Database::getBugDesc( QString bug, const QString& dbname )
         return QString::Null();
     }
  
-    if ( dbname.isNull() ) 
-    {
-        db = QSqlDatabase::database( "mysqlDB" );
-    }
-    else
-    {
-        db = QSqlDatabase::database( dbname );
-    }
-    
+    db = QSqlDatabase::database( dbname );
     db.transaction();
+    
     QSqlQuery query( db );
     
     query.prepare( "SELECT TITLE FROM BUG WHERE ( ID = :bug )" );
@@ -2406,6 +2024,7 @@ QString Database::escapeString(QString str)
 
 bool Database::openMysqlDB( const QString& name )
 {
+    print_open_dbs();
     if ( !QSqlDatabase::database( name ).isOpen() )
     {
         QSqlDatabase mysqlDB = QSqlDatabase::addDatabase( "QMYSQL", name );
@@ -2435,6 +2054,7 @@ bool Database::openMysqlDB( const QString& name )
 
 bool Database::openQmonDB( const QString& name )
 {
+    print_open_dbs();
     if ( !QSqlDatabase::database( name ).isOpen() )
     {
         QSqlDatabase qmonDB = QSqlDatabase::addDatabase( "QODBC", name );
@@ -2463,6 +2083,7 @@ bool Database::openQmonDB( const QString& name )
 
 bool Database::openSiebelDB( const QString& name )
 {
+    print_open_dbs();
     if ( !QSqlDatabase::database( name ).isOpen() )
     {
         QSqlDatabase siebelDB = QSqlDatabase::addDatabase( "QOCI", name );
@@ -2493,6 +2114,7 @@ bool Database::openSiebelDB( const QString& name )
 
 bool Database::openReportDB( const QString& name )
 {
+    print_open_dbs();
     if ( !QSqlDatabase::database( name ).isOpen() )
     {
         QSqlDatabase reportDB = QSqlDatabase::addDatabase( "QOCI", name );
@@ -2518,6 +2140,14 @@ bool Database::openReportDB( const QString& name )
     {
         Debug::print( "database", "DB already open in this thread " + name );
         return true;
+    }
+}
+
+void Database::print_open_dbs() {
+    QStringList dbs = QSqlDatabase::connectionNames();
+    
+    foreach(const QString &str, dbs) {
+        Debug::print( "database", "existing connections: " + str);
     }
 }
 

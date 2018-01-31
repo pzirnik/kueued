@@ -107,10 +107,6 @@ void ServerThread::run()
             socket->startServerEncryption();
             socket->waitForEncrypted();
         } 
-/*        out = "Welcome to Kueued 5.5.6 (do the needfull)\r\n" ;
-        socket->write(out.toUtf8());
-        socket->flush();
-        socket->waitForBytesWritten();*/
         socket->waitForReadyRead();
     } else {
         delete socket;
@@ -301,7 +297,7 @@ void ServerThread::run()
                 }
 /* ltssupdate */
             } else if ( cmd.startsWith( "/ltssupdate" ) ) {
-                if (authenticated) {
+                if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
                     Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied ltssupdate without auth.");
@@ -323,7 +319,7 @@ void ServerThread::run()
                 socket->write(out.toUtf8());
 /* updateDB */
             } else if ( cmd.startsWith( "/updateDB" ) ) {
-                if (authenticated) {
+                if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else {
                     Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied updateDB without auth.");
@@ -331,77 +327,91 @@ void ServerThread::run()
                     return;
                 }
                 out=text();
-                bool full = false;
-                QString q = cmd.remove( "/updateDB" );
-                if ( q.remove( "/" ).isEmpty() ) {
-                    full = false;
-                } else if ( q.remove( "/" ) == "full" ) {
-                    full = true;
+                QStringList dbs = QSqlDatabase::connectionNames();
+                int i = 0;
+                foreach(const QString &str, dbs) {
+                    if (str.startsWith("siebelDB-"))
+                      i++;
+                }
+                if ( i < MAX_SIEBEL_CONNECTIONS ) {
+                  bool full = false;
+                  QString q = cmd.remove( "/updateDB" );
+                  if ( q.remove( "/" ).isEmpty() ) {
+                      full = false;
+                  } else if ( q.remove( "/" ) == "full" ) {
+                      full = true;
+                  } else {
+                      full = false;
+                  }
+                  Database::openMysqlDB( mMysqlDB );
+                  /* Database::openSiebelDB( mSiebelDB ); */
+                  Database::openQmonDB( mQmonDB );
+                  Database::openReportDB( mReportDB );
+                  int btime;
+                  QTime timer;
+                  timer.start();
+                  Debug::print( "serverthread", "Starting DB update..." );
+                  if ( full ) {
+                      Debug::print( "serverthread", "Starting PseudoQ update..." );
+                      Database::updatePseudoQueues( mQmonDB, mMysqlDB );
+                      btime = timer.elapsed() / 1000;
+                      timer.restart();
+                      Debug::print( "serverthread", "PseudoQ update finished, took " + QString::number( btime ) + " sec" );
+                      out.append("PseudoQ update took " +  QString::number( btime ) + " sec\n");
+                  }
+                  Debug::print( "serverthread", "Starting Bomgar update..." );
+                  QList< BomgarItem > list = Database::getChats( mQmonDB );
+                  QStringList l;
+                  for ( int i = 0; i < list.size(); ++i ) {
+                      l.append( list.at( i ).id );
+                      if ( !Database::bomgarExistsInDB( list.at( i ).id, mMysqlDB ) ) {
+                          Database::updateBomgarItemInDB( list.at( i ), mMysqlDB );
+                      } else if ( ( Database::getBomgarQueueById( list.at( i ).id, mMysqlDB ) != list.at( i ).name ) ) {
+                          Database::updateBomgarQueue( list.at( i ), mMysqlDB );
+                      }
+                  }
+                  QStringList existList = Database::getQmonBomgarList( mMysqlDB );
+                  for ( int i = 0; i < existList.size(); ++i ) {
+                      if ( !l.contains( existList.at( i ) ) ) {
+                          Database::deleteBomgarItemFromDB( existList.at( i ), mMysqlDB );
+                      }
+                  }
+                  btime = timer.elapsed() / 1000;
+                  timer.restart();
+                  Debug::print( "serverthread", "Bomgar update finished, took " + QString::number( btime ) + " sec" );
+                  Debug::print( "serverthread", "Starting Unity update..." );
+                  out.append("Bomgar update took " +  QString::number( btime ) + " sec\n");
+                  
+                  Database::openSiebelDB( mSiebelDB );
+                  
+                  QList<SiebelItem> ql = Database::getQmonSrs( mSiebelDB, mMysqlDB, mReportDB );
+                  QStringList newList;
+                  for ( int i = 0; i < ql.size(); ++i ) {
+                      newList.append( ql.at( i ).id );
+                      if ( !Database::siebelExistsInDB( ql.at( i ).id, mMysqlDB ) ) {
+                          Database::insertSiebelItemIntoDB( ql.at( i ), mMysqlDB );
+                      } else {
+                          if ( Database::siebelQueueChanged( ql.at( i ), mMysqlDB ) ) {
+                              Database::updateSiebelQueue( ql.at( i ), mMysqlDB );
+                          }
+                          Database::updateSiebelItem( ql.at( i ), mMysqlDB, mSiebelDB );
+                      }
+                  }
+                  QStringList qexistList = Database::getQmonSiebelList( mMysqlDB );
+                  for ( int i = 0; i < qexistList.size(); ++i ) {
+                      if ( !newList.contains( qexistList.at( i ) ) ) {
+                          Database::deleteSiebelItemFromDB( qexistList.at( i ), mMysqlDB );
+                      }
+                  }
+                  out.append("Unity update took " + QString::number( timer.elapsed() / 1000 ) + " sec\n\n");
+                  out.append("UPDATE FINISHED\n");
+                  Debug::print( "serverthread", "Unity update finished, took " + QString::number( timer.elapsed() / 1000 ) + " sec" );
+                  Debug::print( "serverthread", "DB Update finished" );
                 } else {
-                    full = false;
+                   Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " ->" + QString::number(i) + " open connections to SiebelDB -> skipping update" );
+                   out.append("ERROR: To many connections to SiebelDB\n");
                 }
-                Database::openMysqlDB( mMysqlDB );
-                Database::openSiebelDB( mSiebelDB );
-                Database::openQmonDB( mQmonDB );
-                Database::openReportDB( mReportDB );
-                int btime;
-                QTime timer;
-                timer.start();
-                Debug::print( "serverthread", "Starting DB update..." );
-                if ( full ) {
-                    Debug::print( "serverthread", "Starting PseudoQ update..." );
-                    Database::updatePseudoQueues( mQmonDB, mMysqlDB );
-                    btime = timer.elapsed() / 1000;
-                    timer.restart();
-                    Debug::print( "serverthread", "PseudoQ update finished, took " + QString::number( btime ) + " sec" );
-                    out.append("PseudoQ update took " +  QString::number( btime ) + " sec\n");
-                }
-                Debug::print( "serverthread", "Starting Bomgar update..." );
-                QList< BomgarItem > list = Database::getChats( mQmonDB );
-                QStringList l;
-                for ( int i = 0; i < list.size(); ++i ) {
-                    l.append( list.at( i ).id );
-                    if ( !Database::bomgarExistsInDB( list.at( i ).id, mMysqlDB ) ) {
-                        Database::updateBomgarItemInDB( list.at( i ), mMysqlDB );
-                    } else if ( ( Database::getBomgarQueueById( list.at( i ).id, mMysqlDB ) != list.at( i ).name ) ) {
-                        Database::updateBomgarQueue( list.at( i ), mMysqlDB );
-                    }
-                }
-                QStringList existList = Database::getQmonBomgarList( mMysqlDB );
-                for ( int i = 0; i < existList.size(); ++i ) {
-                    if ( !l.contains( existList.at( i ) ) ) {
-                        Database::deleteBomgarItemFromDB( existList.at( i ), mMysqlDB );
-                    }
-                }
-                btime = timer.elapsed() / 1000;
-                timer.restart();
-                Debug::print( "serverthread", "Bomgar update finished, took " + QString::number( btime ) + " sec" );
-                Debug::print( "serverthread", "Starting Unity update..." );
-                out.append("Bomgar update took " +  QString::number( btime ) + " sec\n");
-                QList<SiebelItem> ql = Database::getQmonSrs( mSiebelDB, mMysqlDB, mReportDB );
-                QStringList newList;
-                for ( int i = 0; i < ql.size(); ++i ) {
-                    newList.append( ql.at( i ).id );
-                    if ( !Database::siebelExistsInDB( ql.at( i ).id, mMysqlDB ) ) {
-                        Database::insertSiebelItemIntoDB( ql.at( i ), mMysqlDB );
-                    } else {
-                        if ( Database::siebelQueueChanged( ql.at( i ), mMysqlDB ) ) {
-                            Database::updateSiebelQueue( ql.at( i ), mMysqlDB );
-                        }
-                        Database::updateSiebelItem( ql.at( i ), mMysqlDB, mSiebelDB );
-                    }
-                }
-                QStringList qexistList = Database::getQmonSiebelList( mMysqlDB );
-                for ( int i = 0; i < qexistList.size(); ++i ) {
-                    if ( !newList.contains( qexistList.at( i ) ) ) {
-                        Database::deleteSiebelItemFromDB( qexistList.at( i ), mMysqlDB );
-                    }
-                }
-                out.append("Unity update took " + QString::number( timer.elapsed() / 1000 ) + " sec\n\n");
-                out.append("UPDATE FINISHED\n");
                 socket->write(out.toUtf8());
-                Debug::print( "serverthread", "Unity update finished, took " + QString::number( timer.elapsed() / 1000 ) + " sec" );
-                Debug::print( "serverthread", "DB Update finished" );
 /* chat */
             } else if ( cmd.startsWith( "/chat" ) ) {
                 send_ok();
@@ -435,7 +445,7 @@ void ServerThread::run()
                 socket->write(out.toUtf8());
 /* assign */
             } else if ( cmd.startsWith( "/assign" ) ) {
-                if (authenticated) {
+                if (authenticated || !Settings::enforceauth()) {
                     send_ok();
                 } else { 
                     Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " denied assign without auth.");
@@ -465,7 +475,7 @@ void ServerThread::run()
                     delete net;
                 }
                 socket->write(out.toUtf8());
-/* userquque */
+/* userqueue */
             } else if ( cmd.startsWith( "/userqueue" ) ) {
                 if (authenticated || !Settings::enforceauth()) {
                     send_ok();
@@ -474,26 +484,36 @@ void ServerThread::run()
                     send_nok(401,"Unauthorized\r\nWWW-Authenticate: Basic basic-credentials");
                     return;
                 }
-                Database::openSiebelDB( mSiebelDB );
-                Database::openMysqlDB( mMysqlDB );
-                QString q = cmd.remove( "/userqueue" );
-                QString eng;
-                if ( q.startsWith( "/full/" ) ) {
-                    if (Settings::enforceauth()) {
-                      eng = QString::fromUtf8(user.data()).toUpper();
-                    } else {
-                      eng = q.remove( "/full/" ).remove( "/" ).toUpper();
-                    }
-                    out=xml();
-                    out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB, true ) ));
+                out=xml();
+                QStringList dbs = QSqlDatabase::connectionNames();
+                int i=0;
+                foreach(const QString &str, dbs) {
+                    if (str.startsWith("siebelDB-"))
+                      i++;
+                }
+                if ( i < MAX_SIEBEL_CONNECTIONS ) {
+                  Database::openSiebelDB( mSiebelDB );
+                  Database::openMysqlDB( mMysqlDB );
+                  QString q = cmd.remove( "/userqueue" );
+                  QString eng;
+                  if ( q.startsWith( "/full/" ) ) {
+                      if (Settings::enforceauth()) {
+                        eng = QString::fromUtf8(user.data()).toUpper();
+                      } else {
+                        eng = q.remove( "/full/" ).remove( "/" ).toUpper();
+                      }
+                      out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB, true ) ));
+                  } else {
+                      if (Settings::enforceauth()) {
+                        eng = QString::fromUtf8(user.data()).toUpper();
+                      } else {
+                        eng = q.remove( "/" ).toUpper();
+                      }
+                      out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB ) ));
+                  }
                 } else {
-                    if (Settings::enforceauth()) {
-                      eng = QString::fromUtf8(user.data()).toUpper();
-                    } else {
-                      eng = q.remove( "/" ).toUpper();
-                    }
-                    out=xml();
-                    out.append(XML::queue( Database::getUserQueue( eng, mSiebelDB, mMysqlDB, mReportDB ) ));
+                    Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " ->" + QString::number(i) + " open connections to SiebelDB -> skipping update" );
+                    out.append("<error>To many connections to SiebelDB</error>");
                 }
                 socket->write(out.toUtf8());
 /* stats */
@@ -679,12 +699,19 @@ void ServerThread::run()
                 socket->write(out.toUtf8());
             }
             if ( socket->waitForBytesWritten() ) {
+                socket->disconnect();
                 socket->disconnectFromHost();
                 socket->waitForDisconnected();
             }
-            Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request finisehd success.");
+            Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request finished success.");
+            socket->deleteLater();
             delete socket;
-        }
+            if ( QSqlDatabase::database( mSiebelDB ).isOpen() ) {
+              QSqlDatabase::database( mSiebelDB ).close();
+              QSqlDatabase::removeDatabase( mSiebelDB );
+              Debug::print( "serverthread", "SiebelDB " + mSiebelDB + " closed and removed" );
+            }
+         }
     }
 }
 
@@ -702,6 +729,7 @@ void ServerThread::send_nok(int error, QString reason)
     QString out;
     out.append("HTTP/1.1 " + QString::number(error) + " " + reason +"\r\n");
     out.append("Server: kueued @ " + mHostname + " (Linux)\r\n");
+    out.append(text());
     socket->write(out.toUtf8());
     socket->flush();
     socket->waitForBytesWritten();

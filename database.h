@@ -96,6 +96,7 @@ class Database : public QObject
         static bool openSiebelDB( const QString& );
         static bool openQmonDB( const QString& );
         static bool openReportDB( const QString& );
+        static void print_open_dbs ();
 };
 
 class SiebelItem 

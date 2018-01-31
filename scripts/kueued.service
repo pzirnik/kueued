@@ -10,7 +10,7 @@ Type=simple
 Environment=NLS_LANG=.AL32UTF8
 User=kueued
 Group=kueued
-ExecStart=/bin/sh -c '/usr/bin/kueued 2>&1 >> /var/log/kueued/kueued-debug.log'
+ExecStart=/bin/sh -c '/usr/bin/kueued >> /var/log/kueued/kueued-debug.log 2>&1'
 
 [Install]
 WantedBy=multi-user.target

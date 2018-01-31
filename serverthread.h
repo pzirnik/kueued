@@ -23,6 +23,10 @@
 
 */
 
+#ifndef MAX_SIEBEL_CONNECTIONS
+#define MAX_SIEBEL_CONNECTIONS 15
+#endif
+
 #ifndef SERVERTHREAD_H
 #define SERVERTHREAD_H
 
