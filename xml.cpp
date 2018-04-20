@@ -167,6 +167,11 @@ QString XML::qmon( QList<SiebelItem> list )
             xml += "    <critsit>1</critsit>\n";
         }
         
+        if ( !si.rating.isEmpty() )
+        {
+            xml += "    <rating>" + si.rating + "</rating>\n";
+        }
+        
         if ( !si.subowner.isEmpty() )
         {
             xml += "    <subowner><![CDATA[" + si.subowner.replace(s_,r_) + "]]></subowner>\n";      
@@ -294,6 +299,11 @@ QString XML::qmonDate( QList<SiebelItem> list )
         if ( si.critsit )
         {
             xml += "    <critsit>1</critsit>\n";
+        }
+        
+        if ( !si.rating.isEmpty() )
+        {
+            xml += "    <rating>" + si.rating + "</rating>\n";
         }
         
         xml += "  </sr>\n";
@@ -453,6 +463,11 @@ QString XML::sr( QueueItem qi )
     {
         xml += "    <critsit>1</critsit>\n";
     }
+    
+    if ( !qi.rating.isEmpty() )
+        {
+            xml += "    <rating>" + qi.rating + "</rating>\n";
+        }
     
     xml += "  </sr>\n";
     

@@ -55,11 +55,11 @@ void Database::insertSiebelItemIntoDB( SiebelItem item, const QString& dbname )
     query.prepare( "INSERT INTO QMON_SIEBEL( ID, QUEUE, GEO, HOURS, STATUS, SEVERITY, SOURCE, RESPOND_VIA, "
                    "                         CREATED, LAST_UPDATE, INQUEUE, SLA, SUPPORT_PROGRAM, SUPPORT_PROGRAM_LONG, "
                    "                         ROUTING_PRODUCT, SUPPORT_GROUP_ROUTING, INT_TYPE, SUBTYPE, SERVICE_LEVEL, "
-                   "                         BRIEF_DESC, CRITSIT, HIGH_VALUE, DETAILED_DESC, CATEGORY, CREATOR, ROW_ID, SUBOWNER ) "
+                   "                         BRIEF_DESC, CRITSIT, HIGH_VALUE, DETAILED_DESC, CATEGORY, CREATOR, ROW_ID, SUBOWNER, RATING ) "
                    " VALUES "
                    "( :id, :queue, :geo, :hours, :status, :severity, :source, :respond_via, :created, :last_update, :inqueue, "
                    "  :sla, :support_program, :support_program_long, :routing_product, :support_group_routing, :int_type, :subtype, "
-                   "  :service_level, :brief_desc, :critsit, :high_value,  :detailed_desc, :category, :creator, :row_id, :subowner )" );
+                   "  :service_level, :brief_desc, :critsit, :high_value,  :detailed_desc, :category, :creator, :row_id, :subowner, :rating )" );
 
     query.bindValue( ":id", item.id );
     query.bindValue( ":queue", item.queue );
@@ -88,18 +88,19 @@ void Database::insertSiebelItemIntoDB( SiebelItem item, const QString& dbname )
     query.bindValue( ":creator", item.creator );
     query.bindValue( ":row_id", item.row_id );
     query.bindValue( ":subowner", item.subowner );
+    query.bindValue( ":rating", item.rating );
     
     if ( !query.exec() ) qDebug() << query.lastError().text();
     
     Debug::logQuery( query, db.connectionName() );
     
     QSqlQuery cquery( db );
-    
+     
     cquery.prepare( "INSERT INTO CUSTOMER( ID, CUSTOMER, CONTACT_PHONE, CONTACT_FIRSTNAME, CONTACT_LASTNAME, "
                    "                           CONTACT_EMAIL, CONTACT_TITLE, CONTACT_LANG, ONSITE_PHONE, ORACLE_ID ) "
                    "VALUES"
                    "( :id, :customer, :contact_phone, :contact_firstname, :contact_lastname, :contact_email, "
-                   "  :contact_title, :contact_lang, :onsite_phone, :oracle_id )" );
+                   "  :contact_title, :contact_lang, :onsite_phone, :oracle_id )" ); 
     
     cquery.bindValue( ":id", item.id );
     cquery.bindValue( ":customer", item.customer );
@@ -346,7 +347,7 @@ void Database::updateSiebelItem( SiebelItem item, const QString& dbname, const Q
                    "                       SUPPORT_GROUP_ROUTING = :support_group_routing, INT_TYPE = :int_type,"
                    "                       SUBTYPE = :subtype, SERVICE_LEVEL = :service_level, BRIEF_DESC = :brief_desc,"
                    "                       CRITSIT = :critsit, HIGH_VALUE = :high_value, DETAILED_DESC = :detailed_desc, "
-                   "                       CATEGORY = :category, CREATOR = :creator, ROW_ID = :row_id, SUBOWNER = :subowner WHERE ID = :id" );
+                   "                       CATEGORY = :category, CREATOR = :creator, ROW_ID = :row_id, SUBOWNER = :subowner, RATING = :rating WHERE ID = :id" );
     
     query.bindValue( ":geo", item.geo );
     query.bindValue( ":hours", item.hours );
@@ -377,6 +378,7 @@ void Database::updateSiebelItem( SiebelItem item, const QString& dbname, const Q
     
     query.bindValue( ":row_id", item.row_id );
     query.bindValue( ":subowner", item.subowner );
+    query.bindValue( ":rating", item.rating );
     query.bindValue( ":id", item.id );
 
     if ( !query.exec() ) qDebug() << query.lastError().text();
@@ -592,12 +594,31 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
         i.last_update = convertTime( query.value( 7 ).toString() );
         i.support_program = query.value( 8 ).toString();
         i.subtype = query.value( 9 ).toString();
+        i.rating = "E";
         
         if ( query.value( 9 ).toString() == "Collaboration" )
         {
             i.isCr = true;
             i.creator = getCreator( i.id, dbname );
-            i.crsr = getSrForCr( i.id, mysqlname, reportname );
+            QString sr = getSrForCr( i.id, mysqlname, reportname );
+            
+            if (!sr.isEmpty() && sr != "ERROR") {
+                i.crsr = sr;
+            
+                QStringList infosr;
+                QString cus_nam;
+            
+                infosr = srInfo( i.crsr, dbname);
+            
+                if (infosr.size() > 3) {
+                    cus_nam = infosr.at( 3 );
+            
+                    if (!cus_nam.isEmpty()) 
+                    {
+                        i.rating = getRating( cus_nam, mysqlname );
+                    }
+                }
+            }
         }
         else
         {
@@ -633,6 +654,7 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
             {
                 i.onsite_phone = op;
             }
+            i.rating = getRating(i.customer, mysqlname );
         }
             
         i.service_level = query.value( 10 ).toInt();
@@ -764,11 +786,35 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
         i.last_update = convertTime( query.value( 7 ).toString() );
         i.support_program = query.value( 8 ).toString();
         i.subtype = query.value( 9 ).toString();
+        i.rating = "E";
         
         if ( query.value( 9 ).toString() == "Collaboration" )
         {
             i.isCr = true;
             i.creator = getCreator( i.id, dbname );
+            QString sr = getSrForCr( i.id, mysqlname, reportname );
+            
+            if (!sr.isEmpty() && sr != "ERROR") {
+                i.crsr = sr;
+            
+                QStringList infosr;
+                QString cus_nam;
+            
+                infosr = srInfo( i.crsr, dbname);
+            
+                if (infosr.size() > 3) {
+                    cus_nam = infosr.at( 3 );
+            
+                    if (!cus_nam.isEmpty()) 
+                    {
+                        i.rating = getRating( cus_nam, mysqlname );
+                    }
+                }
+                if (!cus_nam.isEmpty()) 
+                {
+                    i.rating = getRating( cus_nam, mysqlname );
+                }
+            }
         }
         else
         {
@@ -804,6 +850,7 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
             {
                 i.onsite_phone = op;
             }
+            i.rating = getRating( i.customer, mysqlname );
         }
             
         i.service_level = query.value( 10 ).toInt();
@@ -1274,14 +1321,14 @@ QList< SiebelItem > Database::getSrsForQueue( const QString& queue, const QStrin
         query.prepare( "SELECT ID, QUEUE, GEO, HOURS, STATUS, SEVERITY, SOURCE, RESPOND_VIA, CREATED, LAST_UPDATE, "
                        "INQUEUE, SLA, SUPPORT_PROGRAM, SUPPORT_PROGRAM_LONG, ROUTING_PRODUCT, SUPPORT_GROUP_ROUTING, "
                        "INT_TYPE, SUBTYPE, SERVICE_LEVEL, BRIEF_DESC, CRITSIT, HIGH_VALUE, DETAILED_DESC, CATEGORY, "
-                       "CREATOR, ROW_ID, SUBOWNER from QMON_SIEBEL ORDER BY CREATED ASC" );
+                       "CREATOR, ROW_ID, SUBOWNER, RATING from QMON_SIEBEL ORDER BY CREATED ASC" );
     }
     else
     {
         query.prepare( "SELECT ID, QUEUE, GEO, HOURS, STATUS, SEVERITY, SOURCE, RESPOND_VIA, CREATED, LAST_UPDATE, "
                        "INQUEUE, SLA, SUPPORT_PROGRAM, SUPPORT_PROGRAM_LONG, ROUTING_PRODUCT, SUPPORT_GROUP_ROUTING, "
                        "INT_TYPE, SUBTYPE, SERVICE_LEVEL, BRIEF_DESC, CRITSIT, HIGH_VALUE, DETAILED_DESC, CATEGORY, "
-                       "CREATOR, ROW_ID, SUBOWNER from QMON_SIEBEL WHERE ( QUEUE = :queue ) ORDER BY CREATED ASC" );
+                       "CREATOR, ROW_ID, SUBOWNER, RATING from QMON_SIEBEL WHERE ( QUEUE = :queue ) ORDER BY CREATED ASC" );
         
         query.bindValue( ":queue", queue );
     }
@@ -1320,6 +1367,7 @@ QList< SiebelItem > Database::getSrsForQueue( const QString& queue, const QStrin
         si.category = query.value( 23 ).toString();
         si.row_id = query.value( 25 ).toString();
 	si.subowner = query.value( 26 ).toString();
+        si.rating = query.value( 27 ).toString();
         
         if ( getBomgarQueue( query.value( 0 ).toString(), dbname ) == "NOCHAT" )
         {
@@ -1360,7 +1408,7 @@ QList< SiebelItem > Database::getSrsForQueue( const QString& queue, const QStrin
                 si.contact_title = cquery.value( 5 ).toString();
                 si.contact_lang = cquery.value( 6 ).toString();
                 si.onsite_phone = cquery.value( 7 ).toString(); 
-                si.cstNum = cquery.value( 8 ).toString(); 
+                si.cstNum = cquery.value( 8 ).toString();
             }
         }
        
@@ -1775,16 +1823,38 @@ QList< SiebelItem > Database::getQmonSrs( const QString& dbname, const QString& 
         si.subtype = query.value( 16 ).toString();
         si.service_level = query.value( 17 ).toString();
         si.brief_desc = query.value( 18 ).toString();
+        si.customer = query.value( 21 ).toString();
+        si.rating = "E";
 
         if ( query.value( 16 ).toString() == "Collaboration" )
         {
             si.isCr = true;
             si.creator = getCreator( si.id, dbname );
-            si.crsr = getSrForCr( si.id, mysqlname, reportname );
+            
+            QString sr = getSrForCr( si.id, mysqlname, reportname );
+            
+            if (!sr.isEmpty() && sr != "ERROR") {
+                si.crsr = sr;
+                
+                QStringList infosr;
+                QString cus_nam;
+            
+                infosr = srInfo( si.crsr, dbname);
+                
+                if (infosr.size() > 3) {
+                    cus_nam = infosr.at( 3 );
+                           
+                    if (!cus_nam.isEmpty()) 
+                    {
+                        si.rating = getRating( cus_nam, mysqlname );
+                    }
+                }
+            }
         }
         else
         {
             si.isCr = false;
+            si.rating = getRating( si.customer, mysqlname );
         }
         
         if ( query.value( 19 ).toString() == "Y" )
@@ -1804,9 +1874,7 @@ QList< SiebelItem > Database::getQmonSrs( const QString& dbname, const QString& 
         {
             si.high_value = false;
         }
-        
-        si.customer = query.value( 21 ).toString();
-        
+                
         QString p = query.value( 22 ).toString();
         QString f = query.value( 23 ).toString();
         
@@ -1937,6 +2005,37 @@ QString Database::formatPhone( QString p, const QString& f )
     }
         
     return p;
+}
+
+QString Database::getRating( QString customer, const QString& dbname )
+{
+    QSqlDatabase db;
+    customer = customer.trimmed();
+    
+    if ( customer.isEmpty() ) {
+        return "E";
+    }
+    
+    db = QSqlDatabase::database( dbname );
+    db.transaction();
+    
+    QSqlQuery query( db );
+    
+    query.prepare( "SELECT RATING FROM TOPACCOUNTS WHERE ( ACCOUNT LIKE :customer )");
+    
+    query.bindValue( ":customer", customer);
+    
+    if ( !query.exec() ) qDebug() << query.lastError().text();
+    
+    db.commit();
+    
+    if ( query.size() == 0 ) {
+         return "E";
+    } else if ( query.next() ) {
+         return query.value( 0 ).toString();
+    } else {
+         return "E";   
+    }
 }
 
 QString Database::getBugDesc( QString bug, const QString& dbname )

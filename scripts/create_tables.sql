@@ -158,9 +158,21 @@ CREATE TABLE `QMON_SIEBEL` (
   `CREATOR` text character set utf8 collate utf8_unicode_ci,
   `ROW_ID` text character set utf8 collate utf8_unicode_ci,
   `SUBOWNER` text,
+  `RATING` varchar(1) character set utf8 collate utf8_unicode_ci NOT NULL DEFAULT "E",
   PRIMARY KEY  (`ID`),
   UNIQUE KEY `ID` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `TOPACCOUNTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `TOPACCOUNTS` (
+  `ACCOUNT` varchar(250) character set utf8,
+  `RATING` varchar(1) character set utf8 collate utf8_unicode_ci NOT NULL DEFAULT "E",
+  PRIMARY KEY  (`ACCOUNT`),
+  UNIQUE KEY `ACCOUNT` (`ACCOUNT`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

@@ -331,7 +331,7 @@ void ServerThread::run()
                 int i = 0;
                 foreach(const QString &str, dbs) {
                     if (str.startsWith("siebelDB-"))
-                      i++;
+                        i++;
                 }
                 if ( i < MAX_SIEBEL_CONNECTIONS ) {
                   bool full = false;

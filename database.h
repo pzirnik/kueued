@@ -87,6 +87,7 @@ class Database : public QObject
         
         static QStringList srInfo( const QString&, const QString& );
         static QString getBugDesc( QString, const QString& );
+        static QString getRating( QString customer, const QString& );
 
         static bool isBugID( const QString& );
         
@@ -145,6 +146,7 @@ class SiebelItem
         bool isChat;
         bool critsit;
         bool high_value;
+        QString rating;
 };
 
 class QueueItem
@@ -182,6 +184,7 @@ class QueueItem
         bool isCr;
         bool critsit;
         bool high_value;
+        QString rating;
 };
 
 class BomgarItem 
