@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         
     QCoreApplication::setOrganizationName( "nts" );
     QCoreApplication::setApplicationName( "kueued" );
-    QCoreApplication::setApplicationVersion( "git" );
+    QCoreApplication::setApplicationVersion( "5.6.0" );
 
     Kueued k;
     return app.exec();
