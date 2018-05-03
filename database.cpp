@@ -2013,7 +2013,7 @@ QString Database::getRating( QString customer, const QString& dbname )
     customer = customer.trimmed();
     
     if ( customer.isEmpty() ) {
-        return "E";
+        return "None";
     }
     
     db = QSqlDatabase::database( dbname );
@@ -2030,11 +2030,11 @@ QString Database::getRating( QString customer, const QString& dbname )
     db.commit();
     
     if ( query.size() == 0 ) {
-         return "E";
+         return "None";
     } else if ( query.next() ) {
          return query.value( 0 ).toString();
     } else {
-         return "E";   
+         return "None";   
     }
 }
 
