@@ -158,7 +158,7 @@ CREATE TABLE `QMON_SIEBEL` (
   `CREATOR` text character set utf8 collate utf8_unicode_ci,
   `ROW_ID` text character set utf8 collate utf8_unicode_ci,
   `SUBOWNER` text,
-  `RATING` varchar(1) character set utf8 collate utf8_unicode_ci NOT NULL DEFAULT "E",
+  `RATING` varchar(4) character set utf8 collate utf8_unicode_ci NOT NULL DEFAULT "None",
   PRIMARY KEY  (`ID`),
   UNIQUE KEY `ID` (`ID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;

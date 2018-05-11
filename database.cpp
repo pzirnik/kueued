@@ -594,7 +594,7 @@ QList< QueueItem > Database::getUserQueue( const QString& engineer, const QStrin
         i.last_update = convertTime( query.value( 7 ).toString() );
         i.support_program = query.value( 8 ).toString();
         i.subtype = query.value( 9 ).toString();
-        i.rating = "E";
+        i.rating = "None";
         
         if ( query.value( 9 ).toString() == "Collaboration" )
         {
@@ -748,7 +748,8 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
                     "  sr.DESC_TEXT as DETAILED_DESC, "
                     "  sr.X_ALT_CONTACT, "
                     "  sr.X_DEFECT_NUM, "
-                    "  ext.X_ORACLE_CUSTOMER_ID "
+                    "  ext.X_ORACLE_CUSTOMER_ID, "
+                    "  u.login as OWNER "
                     "from "
                     "  siebel.s_srv_req sr, "
                     "  siebel.s_user u, "
@@ -786,7 +787,7 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
         i.last_update = convertTime( query.value( 7 ).toString() );
         i.support_program = query.value( 8 ).toString();
         i.subtype = query.value( 9 ).toString();
-        i.rating = "E";
+        i.rating = "None";
         
         if ( query.value( 9 ).toString() == "Collaboration" )
         {
@@ -882,6 +883,7 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
         if ( isBugID( b ) ) i.bugId = query.value( 26 ).toString();
 
         i.cstNum = query.value( 27 ).toString();
+        i.owner = query.value( 28 ).toString();
         
         if ( !i.bugId.isEmpty() && isBugID( i.bugId ) )
         {
@@ -1824,7 +1826,7 @@ QList< SiebelItem > Database::getQmonSrs( const QString& dbname, const QString& 
         si.service_level = query.value( 17 ).toString();
         si.brief_desc = query.value( 18 ).toString();
         si.customer = query.value( 21 ).toString();
-        si.rating = "E";
+        si.rating = "None";
 
         if ( query.value( 16 ).toString() == "Collaboration" )
         {
