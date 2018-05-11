@@ -701,7 +701,7 @@ void ServerThread::run()
             if ( socket->waitForBytesWritten() ) {
                 socket->disconnect();
                 socket->disconnectFromHost();
-                //socket->waitForDisconnected();
+                socket->waitForDisconnected();
             }
             Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " request finished success.");
             socket->deleteLater();
