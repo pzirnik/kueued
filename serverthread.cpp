@@ -142,9 +142,8 @@ void ServerThread::run()
                 QByteArray credentials;
                 credentials.append(auth);
                 auth = credentials.fromBase64(credentials);
-                QStringList tokens = auth.split(":");
-                user.append(tokens[0]);
-                password.append(tokens[1]);
+                user = auth.section(':',0 ,0).toAscii();
+                password = auth.section(':', 1).toAscii();
                 user.append("\0");
                 password.append("\0");
             }
