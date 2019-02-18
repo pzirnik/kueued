@@ -803,9 +803,10 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
                     "  siebel.s_contact g, "
                     "  siebel.s_entlmnt e, "
                     "  siebel.s_sched_cal cal, "
-                    "  siebel.s_org_ext ext, "
+                    "  siebel.s_org_ext o, "
                     "  siebel.s_prod_int prd, "
-                    "  siebel.s_org_ext_x flag "
+                    "  siebel.s_org_ext  ext "
+                    "   left join siebel.s_org_ext_x flag ON ext.row_id = flag.row_id "
                     "where "
                     "  sr.owner_emp_id = u.row_id "
                     "  and u.row_id = c.row_id "
@@ -815,7 +816,7 @@ QueueItem Database::getSrInfo( const QString& sr, const QString& dbname, const Q
                     "  and e.svc_calendar_id = cal.row_id "
                     "  and sr.cst_ou_id = ext.row_id "
                     "  and sr.X_PROD_FEATURE_ID = prd.row_id "
-                    "  and ext.row_id = flag.row_id" );
+                    "  and sr.bu_id = o.row_id" );
         
     query.bindValue( ":sr", sr );
     if ( !query.exec() ) qDebug() << query.lastError().text();
