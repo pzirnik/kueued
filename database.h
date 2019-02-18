@@ -33,6 +33,7 @@ class BomgarItem;
 class QueueItem;
 class PseudoQueueItem;
 class LTSScustomer;
+class IR_item;
 
 class Database : public QObject
 {
@@ -58,7 +59,7 @@ class Database : public QObject
         static QString getSrForCr( const QString&, const QString& = QString::Null(), const QString& = QString::Null() );
         static QString getSrForCrMysql( const QString&, const QString& = QString::Null() );
         static QString getSrForCrReport( const QString&, const QString& = QString::Null(), const QString& = QString::Null() );
-        
+        static QList< IR_item >get_IR_status( const QStringList&, const QString& = QString::Null() );
         static void updateBomgarItemInDB( BomgarItem, const QString& = QString::Null() );
         static void deleteBomgarItemFromDB( const QString&, const QString& = QString::Null() );
         static QList< SiebelItem > getSrsForQueue( const QString& = "NONE", const QString& = QString::Null() );
@@ -217,5 +218,13 @@ class LTSScustomer
         QString geo;
         QString oracle_customer_nr;
 };
+
+class IR_item
+{
+    public:
+        QString sr;
+        QString status;
+};
+        
 
 #endif

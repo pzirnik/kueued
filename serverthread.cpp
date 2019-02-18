@@ -642,6 +642,38 @@ void ServerThread::run()
                 out=xml();
                 out.append(XML::SendMenu());
                 socket->write(out.toUtf8());
+/* IR status */
+            } else if (cmd.startsWith( "/iri/" ) ) {
+                send_ok();
+                out=xml();
+                QRegExp srnr( "^[0-9]{11,12}$" );
+                QStringList srs = cmd.remove("/iri/").split("/");
+                QStringList srs_quote;
+                bool badsr = false;
+                for (int i = 0; i < srs.size(); i++) {
+                    if (!srnr.exactMatch(srs.at(i) ) ) {
+                        badsr=true;
+                        out.append("<error>" + srs.at(i) + " is a Invalid SR number</error>\r\n");
+                    } else {
+                        srs_quote.append("'" + srs.at(i) + "'");
+                    }
+                }
+                if (!badsr) {
+                    QStringList dbs = QSqlDatabase::connectionNames();
+                    int i=0;
+                    foreach(const QString &str, dbs) {
+                        if (str.startsWith("siebelDB-"))
+                            i++;
+                    }
+                    if ( i < MAX_SIEBEL_CONNECTIONS ) {
+                        Database::openSiebelDB( mSiebelDB );
+                        out.append(XML::IR_status( Database::get_IR_status( srs_quote,  mSiebelDB) ) );
+                    } else {
+                        Debug::print( "serverthread", "Socket " + QString::number( mSocket ) + " ->" + QString::number(i) + " open connections to SiebelDB -> skipping Ir status" );
+                        out.append("<error>To many connections to SiebelDB</error>");
+                    }
+                }
+                socket->write(out.toUtf8());
 /* default */
             } else {
                 send_ok();

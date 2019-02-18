@@ -314,6 +314,27 @@ QString XML::qmonDate( QList<SiebelItem> list )
     return xml;
 }
 
+QString XML::IR_status( QList<IR_item> list)
+{
+    QString xml;
+    
+    xml += "<ir_status>\n";
+    
+    for ( int i = 0; i < list.size(); ++i )
+    {
+        IR_item ir = list.at( i );
+        
+        xml+= " <sr>\n";
+        xml+= "  <num>" + ir.sr + "</num>\n";
+        xml+= "  <status>" + ir.status + "</status>\n";
+        xml+= " </sr>\n";
+    }
+    
+    xml += "</ir_status>\n";
+    
+    return xml;
+}
+
 QString XML::queue( QList<QueueItem> list )
 {
     QString xml;

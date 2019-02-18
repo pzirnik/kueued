@@ -32,12 +32,14 @@
 class SiebelItem;
 //class BomgarItem;
 class Statistics;
+class IR_item;
 
 class XML
 {
     public:
         static QString qmon( QList<SiebelItem> );
         static QString qmonDate( QList<SiebelItem> );
+        static QString IR_status( QList<IR_item> );
         static QString queue( QList<QueueItem> );
         static QString ltssCust( QList<LTSScustomer> );
         static QString sr( QueueItem );
